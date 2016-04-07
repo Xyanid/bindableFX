@@ -57,7 +57,7 @@ public abstract class PropertyBinding<TValue, TPropertyValue, TProperty extends 
      */
     @Override
     protected final void onPropertyChanged(final ObservableValue<? extends TValue> observable, final TValue oldValue, final TValue newValue) {
-        if (oldValue != null) {
+        if (providedProperty != null) {
             unbindProperty(providedProperty);
             providedProperty = null;
         }
@@ -67,6 +67,21 @@ public abstract class PropertyBinding<TValue, TPropertyValue, TProperty extends 
             bindProperty(providedProperty);
         }
     }
+
+    // endregion
+
+    // region Override
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        if (providedProperty != null) {
+            unbindProperty(providedProperty);
+            providedProperty = null;
+        }
+    }
+
 
     // endregion
 }

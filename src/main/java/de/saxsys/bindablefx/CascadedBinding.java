@@ -50,13 +50,13 @@ public class CascadedBinding<TValue, TPropertyValue, TProperty extends ObjectPro
         return (CascadedBinding) binding;
     }
 
-    public UnidirectionalBinding bind(ObjectProperty property) {
+    public UnidirectionalBinding bind(final ObjectProperty property) {
 
         // TODO need to create a UnidirectionalBinding here and set the property
         return null;
     }
 
-    public BidirectionalBinding bindBidirectional(ObjectProperty property) {
+    public BidirectionalBinding bindBidirectional(final ObjectProperty property) {
 
         // TODO need to create a BidirectionalBinding here and set the property
         return null;
@@ -67,7 +67,7 @@ public class CascadedBinding<TValue, TPropertyValue, TProperty extends ObjectPro
     // region Override PropertyBinding
 
     @Override
-    protected void unbindProperty(TProperty providedProperty) {
+    protected void unbindProperty(final TProperty providedProperty) {
         if (binding == null) {
             return;
         }
@@ -75,7 +75,7 @@ public class CascadedBinding<TValue, TPropertyValue, TProperty extends ObjectPro
     }
 
     @Override
-    protected void bindProperty(TProperty providedProperty) {
+    protected void bindProperty(final TProperty providedProperty) {
         if (providedProperty != null) {
             if (binding instanceof FinalBinding) {
                 binding.setProperty(providedProperty);

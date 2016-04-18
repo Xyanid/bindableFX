@@ -11,26 +11,29 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-package de.saxsys.bindablefx.mocks;
+package de.saxsys.bindablefx;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * @author xyanid on 31.03.2016.
  */
-public class A {
+@RunWith(MockitoJUnitRunner.class)
+public class UnidirectionalBindingTest {
+
+    //region Tests
 
     /**
-     * Determines the b
+     * Tests if main items can be added and removed.
      */
-    private final ObjectProperty<B> b = new SimpleObjectProperty<>();
+    @Test
+    public void bindingAPropertyWorksAsExpected() {
 
-    /**
-     * Gets the property {@link #b}.
-     * @return the {@link #b} property.
-     */
-    public final ObjectProperty<B> bProperty() {
-        return b;
+
     }
+
+
+    // endregion
 }

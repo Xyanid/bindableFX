@@ -23,8 +23,7 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty extends ObjectProperty<TRelayedPropertyValue>>
-        extends RelayBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty> {
+public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> extends RelayBinding<TPropertyValue, TRelayedPropertyValue> {
 
     // region Fields
 
@@ -32,13 +31,14 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue, TRela
      * This is the target property that will be bound to the relayed {@link ObjectProperty} which is provided by applying the value of the
      * {@link #observedProperty} to the {@link #relayProvider}.
      */
-    private final TRelayedProperty targetProperty;
+    private final ObjectProperty<TRelayedPropertyValue> targetProperty;
 
     // endregion
 
     // region Constructor
 
-    public TargetBinding(final Function<TPropertyValue, TRelayedProperty> relayProvider, final TRelayedProperty targetProperty) {
+    public TargetBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                         final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(relayProvider);
 
         if (targetProperty == null) {
@@ -57,7 +57,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue, TRela
      *
      * @return the {@link #targetProperty}.
      */
-    protected final TRelayedProperty targetPropertyProperty() {
+    protected final ObjectProperty<TRelayedPropertyValue> targetPropertyProperty() {
         return targetProperty;
     }
 

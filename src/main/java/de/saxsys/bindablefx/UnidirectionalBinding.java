@@ -23,12 +23,12 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public class UnidirectionalBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty extends ObjectProperty<TRelayedPropertyValue>>
-        extends TargetBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty> {
+public class UnidirectionalBinding<TPropertyValue, TRelayedPropertyValue> extends TargetBinding<TPropertyValue, TRelayedPropertyValue> {
 
     // region Constructor
 
-    public UnidirectionalBinding(final Function<TPropertyValue, TRelayedProperty> relayProvider, final TRelayedProperty targetProperty) {
+    public UnidirectionalBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                                 final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(relayProvider, targetProperty);
     }
 
@@ -37,14 +37,14 @@ public class UnidirectionalBinding<TPropertyValue, TRelayedPropertyValue, TRelay
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(final TRelayedProperty relayedProperty) {
+    protected void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
             relayedProperty.unbind();
         }
     }
 
     @Override
-    protected void bindProperty(final TRelayedProperty relayedProperty) {
+    protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
             relayedProperty.bind(targetPropertyProperty());
         }

@@ -40,11 +40,8 @@ public class CascadedBindingTest {
 
         A a = new A();
 
-        // this should work and binds xProperty as soon as it is se to otherD
-        CascadedBinding binding = new CascadedBinding<>(a.bProperty(), B::cProperty).attach(C::dProperty);
-
         // this should work and binds xProperty bidirectional as soon as it is se to otherD
-        CascadedBinding cascadedBinding = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        CascadedBinding<B, C> cascadedBinding = new CascadedBinding<>(a.bProperty(), B::cProperty);
 
         cascadedBinding.bind(C::xProperty, otherD);
 

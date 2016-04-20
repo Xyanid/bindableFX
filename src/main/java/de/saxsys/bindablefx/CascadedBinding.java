@@ -47,8 +47,7 @@ import java.util.function.Supplier;
  *
  * @author xyanid on 30.03.2016.
  */
-public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty extends ObjectProperty<TRelayedPropertyValue>>
-        extends RelayBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty> {
+public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends RelayBinding<TPropertyValue, TRelayedPropertyValue> {
 
     // region Fields
 
@@ -63,11 +62,11 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProp
 
     // region Constructor
 
-    private CascadedBinding(final Function<TPropertyValue, TRelayedProperty> relayProvider) {
+    private CascadedBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
         super(relayProvider);
     }
 
-    public CascadedBinding(final ObjectProperty<TPropertyValue> property, final Function<TPropertyValue, TRelayedProperty> relayProvider) {
+    public CascadedBinding(final ObjectProperty<TPropertyValue> property, final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
         this(relayProvider);
 
         setObservedProperty(property);
@@ -91,9 +90,8 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProp
      * @see #bind(Function, ObjectProperty)
      * @see #bindBidirectional(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded, TRelayedPropertyCascaded extends ObjectProperty<TRelayedPropertyValueCascaded>>
-    CascadedBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded, TRelayedPropertyCascaded> attach(
-            final Function<TRelayedPropertyValue, TRelayedPropertyCascaded> relayProvider) {
+    public <TRelayedPropertyValueCascaded> CascadedBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> attach(final Function<TRelayedPropertyValue,
+            ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider) {
         return createNewBinding(() -> new CascadedBinding<>(relayProvider));
     }
 
@@ -111,10 +109,11 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProp
      * @see #attach(Function)
      * @see #bindBidirectional(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded, TRelayedPropertyCascaded extends ObjectProperty<TRelayedPropertyValueCascaded>>
-    UnidirectionalBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded, TRelayedPropertyCascaded> bind(
-            final Function<TRelayedPropertyValue, TRelayedPropertyCascaded> relayProvider,
-            final TRelayedPropertyCascaded targetProperty) {
+    public <TRelayedPropertyValueCascaded> UnidirectionalBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(final
+                                                                                                                            Function<TRelayedPropertyValue,
+                                                                                                                                    ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
+                                                                                                                            final
+                                                                                                                            ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
         return createNewBinding(() -> new UnidirectionalBinding<>(relayProvider, targetProperty));
     }
 
@@ -132,10 +131,10 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProp
      * @see #attach(Function)
      * @see #bind(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded, TRelayedPropertyCascaded extends ObjectProperty<TRelayedPropertyValueCascaded>>
-    BidirectionalBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded, TRelayedPropertyCascaded> bindBidirectional(
-            final Function<TRelayedPropertyValue, TRelayedPropertyCascaded> relayProvider,
-            final TRelayedPropertyCascaded targetProperty) {
+    public <TRelayedPropertyValueCascaded> BidirectionalBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bindBidirectional(final
+                                                                                                                                        Function<TRelayedPropertyValue, ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
+                                                                                                                                        final
+                                                                                                                                        ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
         return createNewBinding(() -> new BidirectionalBinding<>(relayProvider, targetProperty));
     }
 
@@ -144,12 +143,12 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProp
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(final TRelayedProperty relayedProperty) {
+    protected void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         disposeBinding();
     }
 
     @Override
-    protected void bindProperty(final TRelayedProperty relayedProperty) {
+    protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
             bindBinding(relayedProperty);
         }
@@ -171,7 +170,7 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProp
     /**
      * Calls {@link BaseBinding#setObservedProperty(ObjectProperty)} if the current {@link #binding} is not null.
      */
-    private void bindBinding(final TRelayedProperty providedProperty) {
+    private void bindBinding(final ObjectProperty<TRelayedPropertyValue> providedProperty) {
         if (binding != null) {
             binding.setObservedProperty(providedProperty);
         }

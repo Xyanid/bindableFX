@@ -23,12 +23,12 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty extends ObjectProperty<TRelayedPropertyValue>>
-        extends TargetBinding<TPropertyValue, TRelayedPropertyValue, TRelayedProperty> {
+public class BidirectionalBinding<TPropertyValue, TRelayedPropertyValue> extends TargetBinding<TPropertyValue, TRelayedPropertyValue> {
 
     // region Constructor
 
-    public BidirectionalBinding(final Function<TPropertyValue, TRelayedProperty> relayProvider, final TRelayedProperty targetProperty) {
+    public BidirectionalBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                                final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(relayProvider, targetProperty);
     }
 
@@ -42,14 +42,14 @@ public class BidirectionalBinding<TPropertyValue, TRelayedPropertyValue, TRelaye
      * @param relayedProperty the {@link ObjectProperty} which was previously bound.
      */
     @Override
-    protected void unbindProperty(final TRelayedProperty relayedProperty) {
+    protected void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
             relayedProperty.unbindBidirectional(targetPropertyProperty());
         }
     }
 
     @Override
-    protected void bindProperty(final TRelayedProperty relayedProperty) {
+    protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
             relayedProperty.bindBidirectional(targetPropertyProperty());
         }

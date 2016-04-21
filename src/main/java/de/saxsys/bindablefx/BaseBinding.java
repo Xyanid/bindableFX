@@ -15,8 +15,8 @@ package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 
+import java.lang.ref.ReferenceQueue;
 import java.util.Optional;
 
 /**
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 //TODO maybe caching of events that happened during creation of the instance in a sub class need to be cached so they are not lost and
 //TODO invoked when the sub class activates the listener ?
-public abstract class BaseBinding<TPropertyValue> {
+public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue<ObjectProperty<TPropertyValue>> implements ChangeListener<TPropertyValue> {
 
     //region Fields
 
@@ -36,21 +36,6 @@ public abstract class BaseBinding<TPropertyValue> {
      * Determines the {@link ObjectProperty} which is watched by this binding.
      */
     private ObjectProperty<TPropertyValue> observedProperty;
-    /**
-     * The listener which will be attached to the {@link #observedProperty}.
-     */
-    private final ChangeListener<TPropertyValue> listener;
-
-    //endregion
-
-    //region Constructor
-
-    /**
-     * Creates a new instance and adds the {@link #listener} to the {@link #observedProperty}.
-     */
-    protected BaseBinding() {
-        listener = this::onPropertyChanged;
-    }
 
     //endregion
 
@@ -62,7 +47,11 @@ public abstract class BaseBinding<TPropertyValue> {
      * @return {@link Optional#empty()} if the {@link #observedProperty} is null or an {@link Optional} of the current value of the {@link #observedProperty}.
      */
     public Optional<TPropertyValue> getCurrentValue() {
-        return observedProperty != null ? Optional.ofNullable(observedProperty.get()) : Optional.empty();
+        if (observedProperty != null) {
+            return Optional.ofNullable(observedProperty.get());
+        } else {
+            return Optional.empty();
+        }
     }
 
     // endregion
@@ -70,7 +59,7 @@ public abstract class BaseBinding<TPropertyValue> {
     // region Package Private
 
     /**
-     * Sets the {@link #observedProperty} and adds the {@link #listener} to it.
+     * Sets the {@link #observedProperty} and adds the this binding as the listener.
      *
      * @param observedProperty the {@link ObjectProperty} which will be used as the {@link #observedProperty}
      */
@@ -83,8 +72,8 @@ public abstract class BaseBinding<TPropertyValue> {
 
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
         this.observedProperty = observedProperty;
-        this.observedProperty.addListener(listener);
-        onPropertyChanged(observedProperty, null, observedProperty.get());
+        observedProperty.addListener(this);
+        changed(observedProperty, null, observedProperty.get());
     }
 
     // endregion
@@ -92,30 +81,14 @@ public abstract class BaseBinding<TPropertyValue> {
     // region Public
 
     /**
-     * Removes the {@link #listener} from the {@link #observedProperty} and set it to null. Once a call has been made to this method, this {@link BaseBinding}
-     * will not longer work and the {@link #observedProperty} needs to be reset using {@link #setObservedProperty(ObjectProperty)}.
+     * Removes this binding as the listener from the {@link #observedProperty} and set it to null. Once a call has been made to this method, this
+     * {@link BaseBinding} will not longer work and the {@link #observedProperty} needs to be reset using {@link #setObservedProperty(ObjectProperty)}.
      */
     public void dispose() {
         if (observedProperty != null) {
-            observedProperty.removeListener(listener);
-            observedProperty = null;
+            observedProperty.removeListener(this);
         }
     }
-
-    // endregion
-
-    // region Abstract
-
-    /**
-     * Will be called each time the {@link #observedProperty} has changed.
-     *
-     * @param observable the {@link #observedProperty} that was changed.
-     * @param oldValue   the old value.
-     * @param newValue   the new value.
-     */
-    protected abstract void onPropertyChanged(final ObservableValue<? extends TPropertyValue> observable,
-                                              final TPropertyValue oldValue,
-                                              final TPropertyValue newValue);
 
     // endregion
 }

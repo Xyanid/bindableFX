@@ -94,13 +94,10 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      * @param newValue   the new value.
      */
     @Override
-    protected final void onPropertyChanged(final ObservableValue<? extends TPropertyValue> observable,
-                                           final TPropertyValue oldValue,
-                                           final TPropertyValue newValue) {
+    public final void changed(final ObservableValue<? extends TPropertyValue> observable, final TPropertyValue oldValue, final TPropertyValue newValue) {
         if (oldValue != null) {
             unbindProperty(relayProvider.apply(oldValue));
         }
-
         if (newValue != null) {
             bindProperty(relayProvider.apply(newValue));
         }

@@ -46,7 +46,7 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue<ObjectP
      *
      * @return {@link Optional#empty()} if the {@link #observedProperty} is null or an {@link Optional} of the current value of the {@link #observedProperty}.
      */
-    public Optional<TPropertyValue> getCurrentValue() {
+    public Optional<TPropertyValue> getCurrentObservedValue() {
         if (observedProperty != null) {
             return Optional.ofNullable(observedProperty.get());
         } else {

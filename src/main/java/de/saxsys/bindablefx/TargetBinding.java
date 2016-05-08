@@ -48,6 +48,14 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
         this.targetProperty = targetProperty;
     }
 
+    public TargetBinding(final ObjectProperty<TPropertyValue> observedProperty,
+                         final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                         final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+        this(relayProvider, targetProperty);
+
+        setObservedProperty(observedProperty);
+    }
+
     // endregion
 
     // region Getter

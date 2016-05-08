@@ -13,11 +13,6 @@
 
 package de.saxsys.bindablefx;
 
-import de.saxsys.bindablefx.mocks.A;
-import de.saxsys.bindablefx.mocks.B;
-import de.saxsys.bindablefx.mocks.C;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -26,7 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author xyanid on 31.03.2016.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class CascadedBindingTest {
+public class UnidirectionalRelayBindingTest {
 
     //region Tests
 
@@ -34,18 +29,9 @@ public class CascadedBindingTest {
      * Tests if main items can be added and removed.
      */
     @Test
-    public void oneLevelUnidirectionalBindingWorks() {
+    public void bindingAPropertyWorksAsExpected() {
 
-        ObjectProperty<Long> otherD = new SimpleObjectProperty<>();
 
-        A a = new A();
-
-        // this should work and binds xProperty bidirectional as soon as it is se to otherD
-        CascadedBinding<B, C> cascadedBinding = new CascadedBinding<>(a.bProperty(), B::cProperty);
-
-        cascadedBinding.bind(C::xProperty, otherD);
-
-        new CascadedBinding<>(a.bProperty(), B::cProperty).bind(C::xProperty, otherD);
     }
 
 

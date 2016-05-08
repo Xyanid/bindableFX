@@ -78,8 +78,8 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @throws UnsupportedOperationException if the value of the {@link #observedProperty} is not yet available.
      */
-    protected final ObjectProperty<TRelayedPropertyValue> getRelayedProperty() {
-        return relayProvider.apply(getCurrentValue().orElseThrow(UnsupportedOperationException::new));
+    protected final ObjectProperty<TRelayedPropertyValue> getCurrentRelayedPropertyOrFail() {
+        return relayProvider.apply(getCurrentObservedValue().orElseThrow(UnsupportedOperationException::new));
     }
 
     // endregion
@@ -111,7 +111,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
     public void dispose() {
         super.dispose();
 
-        getCurrentValue().ifPresent(value -> unbindProperty(relayProvider.apply(value)));
+        getCurrentObservedValue().ifPresent(value -> unbindProperty(relayProvider.apply(value)));
     }
 
     // endregion

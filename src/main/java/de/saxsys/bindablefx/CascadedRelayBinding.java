@@ -32,7 +32,7 @@ import java.util.function.Supplier;
  * }
  * </pre>
  * However since B and C might be null we would need to listen to the values to become available at some point in time. This is where the
- * {@link CascadedBinding} comes into play and handles this by attaching listeners cascadingly so that we can bind to D with no concern that B or C might be
+ * {@link CascadedRelayBinding} comes into play and handles this by attaching listeners cascadingly so that we can bind to D with no concern that B or C might be
  * null, change or become invalid.
  * <p>
  * e.g. using the above example, the code to safely bind to D would look like this.
@@ -47,7 +47,7 @@ import java.util.function.Supplier;
  *
  * @author xyanid on 30.03.2016.
  */
-public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends RelayBinding<TPropertyValue, TRelayedPropertyValue> {
+public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends RelayBinding<TPropertyValue, TRelayedPropertyValue> {
 
     // region Fields
 
@@ -62,11 +62,11 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends Rela
 
     // region Constructor
 
-    private CascadedBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
+    private CascadedRelayBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
         super(relayProvider);
     }
 
-    public CascadedBinding(final ObjectProperty<TPropertyValue> property, final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
+    public CascadedRelayBinding(final ObjectProperty<TPropertyValue> property, final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
         this(relayProvider);
 
         setObservedProperty(property);
@@ -77,65 +77,65 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends Rela
     // region Public
 
     /**
-     * This will create a new {@link CascadedBinding} for the relayedProperty of this binding. This means that the created {@link CascadedBinding}
+     * This will create a new {@link CascadedRelayBinding} for the relayedProperty of this binding. This means that the created {@link CascadedRelayBinding}
      * will now listen to changes that happen on this bindings relayedProperty and in turn invoke its own binding mechanism.
      * <p>
      * Note that a call to this method will nullify any calls made to {@link #bind(Function, ObjectProperty)} or
      * {@link #bindBidirectional(Function, ObjectProperty)},
      * because the {@link #binding} will be disposed of before a new one is created.
      *
-     * @return a new {@link CascadedBinding} which is used for the {@link #binding}.
+     * @return a new {@link CascadedRelayBinding} which is used for the {@link #binding}.
      *
-     * @see CascadedBinding
+     * @see CascadedRelayBinding
      * @see #bind(Function, ObjectProperty)
      * @see #bindBidirectional(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded> CascadedBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> attach(final Function<TRelayedPropertyValue,
+    public <TRelayedPropertyValueCascaded> CascadedRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> attach(final Function<TRelayedPropertyValue,
             ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider) {
-        return createNewBinding(() -> new CascadedBinding<>(relayProvider));
+        return createNewBinding(() -> new CascadedRelayBinding<>(relayProvider));
     }
 
     /**
-     * This will create a new {@link UnidirectionalBinding} for the relayedProperty of this binding. This means that the created
-     * {@link UnidirectionalBinding}
+     * This will create a new {@link UnidirectionalRelayBinding} for the relayedProperty of this binding. This means that the created
+     * {@link UnidirectionalRelayBinding}
      * will now listen to changes that happen on this bindings relayedProperty and in turn invoke its own binding mechanism.
      * <p>
      * Note that a call to this method will nullify any calls made to {@link #attach(Function)} or {@link #bindBidirectional(Function, ObjectProperty)},
      * because the {@link #binding} will be disposed of before a new one is created.
      *
-     * @return a new {@link UnidirectionalBinding} which is used for the {@link #binding}.
+     * @return a new {@link UnidirectionalRelayBinding} which is used for the {@link #binding}.
      *
-     * @see UnidirectionalBinding
+     * @see UnidirectionalRelayBinding
      * @see #attach(Function)
      * @see #bindBidirectional(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded> UnidirectionalBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(final
+    public <TRelayedPropertyValueCascaded> UnidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(final
                                                                                                                             Function<TRelayedPropertyValue,
                                                                                                                                     ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
-                                                                                                                            final
+                                                                                                                                 final
                                                                                                                             ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
-        return createNewBinding(() -> new UnidirectionalBinding<>(relayProvider, targetProperty));
+        return createNewBinding(() -> new UnidirectionalRelayBinding<>(relayProvider, targetProperty));
     }
 
     /**
-     * This will create a new {@link BidirectionalBinding} for the relayedProperty of this binding. This means that the created
-     * {@link BidirectionalBinding}
+     * This will create a new {@link BidirectionalRelayBinding} for the relayedProperty of this binding. This means that the created
+     * {@link BidirectionalRelayBinding}
      * will now listen to changes that happen on this bindings relayedProperty and in turn invoke its own binding mechanism.
      * <p>
      * Note that a call to this method will nullify any calls made to {@link #attach(Function)} or {@link #bind(Function, ObjectProperty)}, because the
      * {@link #binding} will be disposed of before a new one is created.
      *
-     * @return a new {@link BidirectionalBinding} which is used for the {@link #binding}.
+     * @return a new {@link BidirectionalRelayBinding} which is used for the {@link #binding}.
      *
-     * @see BidirectionalBinding
+     * @see BidirectionalRelayBinding
      * @see #attach(Function)
      * @see #bind(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded> BidirectionalBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bindBidirectional(final
+    public <TRelayedPropertyValueCascaded> BidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bindBidirectional(final
                                                                                                                                         Function<TRelayedPropertyValue, ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
-                                                                                                                                        final
+                                                                                                                                             final
                                                                                                                                         ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
-        return createNewBinding(() -> new BidirectionalBinding<>(relayProvider, targetProperty));
+        return createNewBinding(() -> new BidirectionalRelayBinding<>(relayProvider, targetProperty));
     }
 
     // endregion
@@ -144,13 +144,13 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends Rela
 
     @Override
     protected void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
-        disposeBinding();
+        bindingDispose();
     }
 
     @Override
     protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            bindBinding(relayedProperty);
+            bindingSetObservedProperty(relayedProperty);
         }
     }
 
@@ -161,7 +161,7 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends Rela
     /**
      * Calls {@link BaseBinding#dispose()} if the current {@link #binding} is not null and sets it to null afterwards.
      */
-    private void disposeBinding() {
+    private void bindingDispose() {
         if (binding != null) {
             binding.dispose();
         }
@@ -170,7 +170,7 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends Rela
     /**
      * Calls {@link BaseBinding#setObservedProperty(ObjectProperty)} if the current {@link #binding} is not null.
      */
-    private void bindBinding(final ObjectProperty<TRelayedPropertyValue> providedProperty) {
+    private void bindingSetObservedProperty(final ObjectProperty<TRelayedPropertyValue> providedProperty) {
         if (binding != null) {
             binding.setObservedProperty(providedProperty);
         }
@@ -185,12 +185,12 @@ public class CascadedBinding<TPropertyValue, TRelayedPropertyValue> extends Rela
      * @return a new {@link TBaseBinding} which as been set as the new {@link #binding}.
      */
     private <TBaseBinding extends BaseBinding> TBaseBinding createNewBinding(final Supplier<TBaseBinding> bindingCreator) {
-        disposeBinding();
+        bindingDispose();
 
         binding = bindingCreator.get();
 
         // the property was already set because we had a call before a call to this method was made
-        getCurrentValue().ifPresent(value -> binding.setObservedProperty(getRelayedProperty()));
+        getCurrentObservedValue().ifPresent(value -> binding.setObservedProperty(getCurrentRelayedPropertyOrFail()));
 
         return (TBaseBinding) binding;
     }

@@ -21,12 +21,23 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author xyanid on 31.03.2016.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class UnidirectionalBindingTest {
+public class BidirectionalRelayBindingTest {
 
     //region Tests
 
     /**
-     * Tests if main items can be added and removed.
+     * Tests if the binding of a property works as expected in this case we create a new A on which we will listen to the B property, once this is set we
+     * will get the C property of the B property and bind towards the X property.
+     * <p>
+     * e.G. we would like build something like this
+     * <pre>
+     * {@code
+     * A a = new A();
+     * ObjectProperty<Long> property = new SimpleObjectProperty<>();
+     * a.getB().getC().dProperty().bindBidirectional(property);
+     * }
+     * </pre>
+     * However since B and C might be null we would need to listen to the values to become available at some point in time
      */
     @Test
     public void bindingAPropertyWorksAsExpected() {

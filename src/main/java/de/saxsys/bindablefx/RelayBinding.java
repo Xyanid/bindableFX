@@ -49,6 +49,19 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
 
     // endregion
 
+    // region Getter
+
+    /**
+     * Returns the {@link #relayProvider}.
+     *
+     * @return the {@link #relayProvider}.
+     */
+    protected final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> getRelayProvider() {
+        return relayProvider;
+    }
+
+    // endregion
+
     // region Abstract
 
     /**
@@ -66,21 +79,6 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      * @param relayedProperty the {@link ObjectProperty} which was set and needs to be bound now.
      */
     protected abstract void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty);
-
-    // endregion
-
-    // region Protected
-
-    /**
-     * Gets the desired property by applying the current value of the {@link #observedProperty} to the {@link #relayProvider}.
-     *
-     * @return the {@link ObjectProperty} that this {@link RelayBinding} will deliver.
-     *
-     * @throws UnsupportedOperationException if the value of the {@link #observedProperty} is not yet available.
-     */
-    protected final ObjectProperty<TRelayedPropertyValue> getCurrentRelayedPropertyOrFail() {
-        return relayProvider.apply(getCurrentObservedValue().orElseThrow(UnsupportedOperationException::new));
-    }
 
     // endregion
 

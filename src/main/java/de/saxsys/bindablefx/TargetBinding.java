@@ -15,6 +15,7 @@ package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
 
+import java.lang.ref.WeakReference;
 import java.util.function.Function;
 
 /**
@@ -31,7 +32,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      * This is the target property that will be bound to the relayed {@link ObjectProperty} which is provided by applying the value of the
      * {@link #observedProperty} to the {@link #relayProvider}.
      */
-    private final ObjectProperty<TRelayedPropertyValue> targetProperty;
+    private final WeakReference<ObjectProperty<TRelayedPropertyValue>> targetProperty;
 
     // endregion
 
@@ -45,7 +46,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
             throw new IllegalArgumentException("Given targetProperty must not be null");
         }
 
-        this.targetProperty = targetProperty;
+        this.targetProperty = new WeakReference<>(targetProperty);
     }
 
     public TargetBinding(final ObjectProperty<TPropertyValue> observedProperty,
@@ -65,8 +66,8 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      *
      * @return the {@link #targetProperty}.
      */
-    protected final ObjectProperty<TRelayedPropertyValue> targetPropertyProperty() {
-        return targetProperty;
+    protected final ObjectProperty<TRelayedPropertyValue> getTargetPropertyProperty() {
+        return targetProperty.get();
     }
 
     // endregion

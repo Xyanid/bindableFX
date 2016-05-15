@@ -51,7 +51,12 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> e
     @Override
     protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            relayedProperty.bind(targetPropertyProperty());
+            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
+            if (property != null) {
+                relayedProperty.bind(property);
+            } else {
+                dispose();
+            }
         }
     }
 

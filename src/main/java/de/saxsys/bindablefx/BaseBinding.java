@@ -13,10 +13,11 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.WeakListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 
-import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.Optional;
 
 /**
@@ -28,14 +29,14 @@ import java.util.Optional;
  */
 //TODO maybe caching of events that happened during creation of the instance in a sub class need to be cached so they are not lost and
 //TODO invoked when the sub class activates the listener ?
-public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue<ObjectProperty<TPropertyValue>> implements ChangeListener<TPropertyValue> {
+public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPropertyValue>, WeakListener {
 
     //region Fields
 
     /**
      * Determines the {@link ObjectProperty} which is watched by this binding.
      */
-    private ObjectProperty<TPropertyValue> observedProperty;
+    private WeakReference<ObjectProperty<TPropertyValue>> observedProperty;
 
     //endregion
 
@@ -47,8 +48,13 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue<ObjectP
      * @return {@link Optional#empty()} if the {@link #observedProperty} is null or an {@link Optional} of the current value of the {@link #observedProperty}.
      */
     public Optional<TPropertyValue> getCurrentObservedValue() {
-        if (observedProperty != null) {
-            return Optional.ofNullable(observedProperty.get());
+        if (observedProperty == null) {
+            return Optional.empty();
+        }
+
+        ObjectProperty<TPropertyValue> property = observedProperty.get();
+        if (property != null) {
+            return Optional.ofNullable(property.get());
         } else {
             return Optional.empty();
         }
@@ -71,7 +77,7 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue<ObjectP
         dispose();
 
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
-        this.observedProperty = observedProperty;
+        this.observedProperty = new WeakReference<>(observedProperty);
         observedProperty.addListener(this);
         changed(observedProperty, null, observedProperty.get());
     }
@@ -86,8 +92,24 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue<ObjectP
      */
     public void dispose() {
         if (observedProperty != null) {
-            observedProperty.removeListener(this);
+            ObjectProperty<TPropertyValue> property = observedProperty.get();
+            if (property != null) {
+                property.removeListener(this);
+            }
         }
+    }
+
+    // endregion
+
+    // region Implement WeakListener
+
+    /**
+     * Returns true if the {@link #observedProperty} is no longer set.
+     *
+     * @return true if the {@link #observedProperty} is no longer set, otherwise false.
+     */
+    public boolean wasGarbageCollected() {
+        return observedProperty != null && observedProperty.get() == null;
     }
 
     // endregion

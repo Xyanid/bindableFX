@@ -41,22 +41,25 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> ex
 
     // region Override RelayBinding
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param relayedProperty the {@link ObjectProperty} which was previously bound.
-     */
     @Override
     protected void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            relayedProperty.unbindBidirectional(targetPropertyProperty());
+            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
+            if (property != null) {
+                relayedProperty.unbindBidirectional(property);
+            }
         }
     }
 
     @Override
     protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            relayedProperty.bindBidirectional(targetPropertyProperty());
+            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
+            if (property != null) {
+                relayedProperty.bindBidirectional(property);
+            } else {
+                dispose();
+            }
         }
     }
 

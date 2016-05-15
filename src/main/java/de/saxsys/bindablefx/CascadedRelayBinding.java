@@ -109,11 +109,11 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
      * @see #attach(Function)
      * @see #bindBidirectional(Function, ObjectProperty)
      */
-    public <TRelayedPropertyValueCascaded> UnidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(final
-                                                                                                                            Function<TRelayedPropertyValue,
-                                                                                                                                    ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
-                                                                                                                                 final
-                                                                                                                            ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
+    public <TRelayedPropertyValueCascaded> UnidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(final Function<TRelayedPropertyValue,
+            ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
+                                                                                                                                 final ObjectProperty
+                                                                                                                                         <TRelayedPropertyValueCascaded>
+                                                                                                                                         targetProperty) {
         return createNewBinding(() -> new UnidirectionalRelayBinding<>(relayProvider, targetProperty));
     }
 
@@ -132,9 +132,10 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
      * @see #bind(Function, ObjectProperty)
      */
     public <TRelayedPropertyValueCascaded> BidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bindBidirectional(final
-                                                                                                                                        Function<TRelayedPropertyValue, ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
+                                                                                                                                             Function<TRelayedPropertyValue,
+                                                                                                                                                     ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
                                                                                                                                              final
-                                                                                                                                        ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
+                                                                                                                                             ObjectProperty<TRelayedPropertyValueCascaded> targetProperty) {
         return createNewBinding(() -> new BidirectionalRelayBinding<>(relayProvider, targetProperty));
     }
 
@@ -190,7 +191,7 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
         binding = bindingCreator.get();
 
         // the property was already set because we had a call before a call to this method was made
-        getCurrentObservedValue().ifPresent(value -> binding.setObservedProperty(getCurrentRelayedPropertyOrFail()));
+        getCurrentObservedValue().ifPresent(value -> binding.setObservedProperty(getRelayProvider().apply(value)));
 
         return (TBaseBinding) binding;
     }

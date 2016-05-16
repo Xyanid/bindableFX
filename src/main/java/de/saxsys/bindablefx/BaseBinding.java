@@ -16,6 +16,7 @@ package de.saxsys.bindablefx;
 import javafx.beans.WeakListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
@@ -65,16 +66,29 @@ public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPro
     // region Package Private
 
     /**
+     * Removes this binding as the listener from the {@link #observedProperty}, invokes a call to {@link #changed(ObservableValue, Object, Object)} with the oldValue and then
+     * sets the {@link #observedProperty} to null.
+     */
+    void destroyObservedProperty() {
+        if (observedProperty != null) {
+            ObjectProperty<TPropertyValue> property = observedProperty.get();
+            if (property != null) {
+                property.removeListener(this);
+                changed(property, property.get(), null);
+            }
+            observedProperty = null;
+        }
+    }
+
+    /**
      * Sets the {@link #observedProperty} and adds the this binding as the listener.
      *
      * @param observedProperty the {@link ObjectProperty} which will be used as the {@link #observedProperty}
      */
-    void setObservedProperty(final ObjectProperty<TPropertyValue> observedProperty) {
+    void createObservedProperty(final ObjectProperty<TPropertyValue> observedProperty) {
         if (observedProperty == null) {
             throw new IllegalArgumentException("Given observedProperty can not be null");
         }
-
-        dispose();
 
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
         this.observedProperty = new WeakReference<>(observedProperty);
@@ -87,16 +101,12 @@ public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPro
     // region Public
 
     /**
-     * Removes this binding as the listener from the {@link #observedProperty} and set it to null. Once a call has been made to this method, this
-     * {@link BaseBinding} will not longer work and the {@link #observedProperty} needs to be reset using {@link #setObservedProperty(ObjectProperty)}.
+     * Removes this binding as the listener from the {@link #observedProperty}, invokes a call to {@link #changed(ObservableValue, Object, Object)} with the oldValue and then
+     * sets the {@link #observedProperty} to null. After the call, this {@link BaseBinding} will not longer work and the {@link #observedProperty} needs to be reset using
+     * {@link #createObservedProperty(ObjectProperty)}.
      */
     public void dispose() {
-        if (observedProperty != null) {
-            ObjectProperty<TPropertyValue> property = observedProperty.get();
-            if (property != null) {
-                property.removeListener(this);
-            }
-        }
+        destroyObservedProperty();
     }
 
     // endregion

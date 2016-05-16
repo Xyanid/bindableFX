@@ -101,16 +101,5 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
         }
     }
 
-    /**
-     * {@inheritDoc}. This implementation will also unbind the property which was bound using the {@link #relayProvider}, if the current value of the
-     * {@link #observedProperty}.
-     */
-    @Override
-    public void dispose() {
-        super.dispose();
-
-        getCurrentObservedValue().ifPresent(value -> unbindProperty(relayProvider.apply(value)));
-    }
-
     // endregion
 }

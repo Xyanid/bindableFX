@@ -38,8 +38,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
 
     // region Constructor
 
-    public TargetBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                         final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    public TargetBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider, final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(relayProvider);
 
         if (targetProperty == null) {
@@ -54,7 +53,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
                          final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         this(relayProvider, targetProperty);
 
-        setObservedProperty(observedProperty);
+        createObservedProperty(observedProperty);
     }
 
     // endregion

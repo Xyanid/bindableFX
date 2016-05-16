@@ -69,7 +69,7 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
     public CascadedRelayBinding(final ObjectProperty<TPropertyValue> property, final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
         this(relayProvider);
 
-        setObservedProperty(property);
+        createObservedProperty(property);
     }
 
     // endregion
@@ -110,9 +110,7 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
      * @see #bindBidirectional(Function, ObjectProperty)
      */
     public <TRelayedPropertyValueCascaded> UnidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(final Function<TRelayedPropertyValue,
-            ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider,
-                                                                                                                                 final ObjectProperty
-                                                                                                                                         <TRelayedPropertyValueCascaded>
+            ObjectProperty<TRelayedPropertyValueCascaded>> relayProvider, final ObjectProperty<TRelayedPropertyValueCascaded>
                                                                                                                                          targetProperty) {
         return createNewBinding(() -> new UnidirectionalRelayBinding<>(relayProvider, targetProperty));
     }
@@ -143,37 +141,57 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
 
     // region Override RelayBinding
 
+    /**
+     * {@inheritDoc}This implementation will also invoke {@link BaseBinding#dispose()} on the {@link #binding} and set it to to null.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        disposeChildBinding();
+        binding = null;
+    }
+
     @Override
     protected void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
-        bindingDispose();
+        destroyChildBinding();
     }
 
     @Override
     protected void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            bindingSetObservedProperty(relayedProperty);
+            resetChildBinding(relayedProperty);
         }
     }
 
     // endregion
 
-    // region Private
+    // region Child Binding
 
     /**
-     * Calls {@link BaseBinding#dispose()} if the current {@link #binding} is not null and sets it to null afterwards.
+     * Calls {@link BaseBinding#createObservedProperty(ObjectProperty)} if the current {@link #binding} is set.
      */
-    private void bindingDispose() {
+    @SuppressWarnings("unchecked")
+    private void resetChildBinding(final ObjectProperty<TRelayedPropertyValue> providedProperty) {
         if (binding != null) {
-            binding.dispose();
+            binding.createObservedProperty(providedProperty);
         }
     }
 
     /**
-     * Calls {@link BaseBinding#setObservedProperty(ObjectProperty)} if the current {@link #binding} is not null.
+     * Calls {@link BaseBinding#destroyObservedProperty()} if the current {@link #binding} is set.
      */
-    private void bindingSetObservedProperty(final ObjectProperty<TRelayedPropertyValue> providedProperty) {
+    private void destroyChildBinding() {
         if (binding != null) {
-            binding.setObservedProperty(providedProperty);
+            binding.destroyObservedProperty();
+        }
+    }
+
+    /**
+     * Calls {@link BaseBinding#dispose()} if the current {@link #binding} is set.
+     */
+    private void disposeChildBinding() {
+        if (binding != null) {
+            binding.dispose();
         }
     }
 
@@ -185,13 +203,14 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
      *
      * @return a new {@link TBaseBinding} which as been set as the new {@link #binding}.
      */
+    @SuppressWarnings("unchecked")
     private <TBaseBinding extends BaseBinding> TBaseBinding createNewBinding(final Supplier<TBaseBinding> bindingCreator) {
-        bindingDispose();
+        disposeChildBinding();
 
         binding = bindingCreator.get();
 
-        // the property was already set because we had a call before a call to this method was made
-        getCurrentObservedValue().ifPresent(value -> binding.setObservedProperty(getRelayProvider().apply(value)));
+        // the property was already set because we had a change or already set up view model before a call to this method was made
+        getCurrentObservedValue().ifPresent(value -> binding.createObservedProperty(getRelayProvider().apply(value)));
 
         return (TBaseBinding) binding;
     }

@@ -13,11 +13,14 @@
 
 package de.saxsys.bindablefx;
 
+import com.sun.istack.internal.Nullable;
 import javafx.beans.WeakListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 
@@ -30,13 +33,14 @@ import java.util.Optional;
  */
 //TODO maybe caching of events that happened during creation of the instance in a sub class need to be cached so they are not lost and
 //TODO invoked when the sub class activates the listener ?
-public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPropertyValue>, WeakListener {
+public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue implements ChangeListener<TPropertyValue>, WeakListener {
 
     //region Fields
 
     /**
      * Determines the {@link ObjectProperty} which is watched by this binding.
      */
+    @Nullable
     private WeakReference<ObjectProperty<TPropertyValue>> observedProperty;
 
     //endregion
@@ -85,11 +89,7 @@ public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPro
      *
      * @param observedProperty the {@link ObjectProperty} which will be used as the {@link #observedProperty}
      */
-    void createObservedProperty(final ObjectProperty<TPropertyValue> observedProperty) {
-        if (observedProperty == null) {
-            throw new IllegalArgumentException("Given observedProperty can not be null");
-        }
-
+    void createObservedProperty(@NotNull final ObjectProperty<TPropertyValue> observedProperty) {
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
         this.observedProperty = new WeakReference<>(observedProperty);
         observedProperty.addListener(this);

@@ -21,7 +21,8 @@ import java.lang.ref.WeakReference;
 /**
  * @author Xyanid on 15.05.2016.
  */
-public final class TestUtil {
+@SuppressWarnings ("unchecked")
+final class TestUtil {
 
     //region Constructor
 
@@ -32,14 +33,14 @@ public final class TestUtil {
     // region Methods
 
     /**
-     * Returns the {@link CascadedRelayBinding#binding} of the given {@link CascadedRelayBinding}.
+     * Returns the {@link CascadedRelayBinding#child} of the given {@link CascadedRelayBinding}.
      *
      * @param binding the {@link CascadedRelayBinding} to use.
      *
-     * @return the {@link CascadedRelayBinding#binding} of the given {@link CascadedRelayBinding}.
+     * @return the {@link CascadedRelayBinding#child} of the given {@link CascadedRelayBinding}.
      */
-    public static BaseBinding getBinding(final CascadedRelayBinding binding) {
-        return (BaseBinding) Whitebox.getInternalState(binding, "binding");
+    static BaseBinding getChild(final CascadedRelayBinding binding) {
+        return (BaseBinding) Whitebox.getInternalState(binding, "child");
     }
 
     /**
@@ -49,7 +50,7 @@ public final class TestUtil {
      *
      * @return the {@link BaseBinding#observedProperty} of the given {@link BaseBinding}.
      */
-    public static WeakReference<ObjectProperty> getObservedProperty(final BaseBinding binding) {
+    static WeakReference<ObjectProperty> getObservedProperty(final BaseBinding binding) {
         return (WeakReference<ObjectProperty>) Whitebox.getInternalState(binding, "observedProperty");
     }
 

@@ -14,6 +14,8 @@
 package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.function.Function;
@@ -38,19 +40,16 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
 
     // region Constructor
 
-    public TargetBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider, final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    protected TargetBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(relayProvider);
-
-        if (targetProperty == null) {
-            throw new IllegalArgumentException("Given targetProperty must not be null");
-        }
 
         this.targetProperty = new WeakReference<>(targetProperty);
     }
 
-    public TargetBinding(final ObjectProperty<TPropertyValue> observedProperty,
-                         final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                         final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    protected TargetBinding(@NotNull final ObjectProperty<TPropertyValue> observedProperty,
+                            @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         this(relayProvider, targetProperty);
 
         createObservedProperty(observedProperty);
@@ -65,8 +64,20 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      *
      * @return the {@link #targetProperty}.
      */
+    @Nullable
     protected final ObjectProperty<TRelayedPropertyValue> getTargetPropertyProperty() {
         return targetProperty.get();
+    }
+
+    // endregion
+
+    // region Override BaseBinding
+
+    @Override
+    public void dispose() {
+        super.dispose();
+
+        targetProperty.clear();
     }
 
     // endregion

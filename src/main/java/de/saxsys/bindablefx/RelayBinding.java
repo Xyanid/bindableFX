@@ -15,6 +15,8 @@ package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ObservableValue;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
@@ -37,12 +39,8 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
 
     // region Constructor
 
-    protected RelayBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
+    protected RelayBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
         super();
-
-        if (relayProvider == null) {
-            throw new IllegalArgumentException("Given relayProvider must not be null");
-        }
 
         this.relayProvider = relayProvider;
     }
@@ -70,7 +68,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @param relayedProperty the {@link ObjectProperty} which was previously bound.
      */
-    protected abstract void unbindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty);
+    protected abstract void unbindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty);
 
     /**
      * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the new value, so the new
@@ -78,7 +76,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @param relayedProperty the {@link ObjectProperty} which was set and needs to be bound now.
      */
-    protected abstract void bindProperty(final ObjectProperty<TRelayedPropertyValue> relayedProperty);
+    protected abstract void bindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty);
 
     // endregion
 
@@ -92,7 +90,9 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      * @param newValue   the new value.
      */
     @Override
-    public final void changed(final ObservableValue<? extends TPropertyValue> observable, final TPropertyValue oldValue, final TPropertyValue newValue) {
+    public final void changed(@Nullable final ObservableValue<? extends TPropertyValue> observable,
+                              @Nullable final TPropertyValue oldValue,
+                              @Nullable final TPropertyValue newValue) {
         if (oldValue != null) {
             unbindProperty(relayProvider.apply(oldValue));
         }

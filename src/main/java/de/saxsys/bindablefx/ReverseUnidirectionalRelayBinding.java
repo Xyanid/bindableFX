@@ -20,23 +20,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 /**
- * This binding will allow for bidirectional binding between he {@link ObjectProperty} which is supplied by the {@link #relayProvider} for the value of the
- * {@link #observedProperty} and the {@link #targetProperty}.
+ * This binding will allow for unidirectional binding between the {@link ObjectProperty} which is supplied by the {@link #relayProvider} for the value of the
+ * {@link #observedProperty} and the {@link #targetProperty}. So the relayed property will have the same value as the {@link #targetProperty}.
  *
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> extends TargetBinding<TPropertyValue, TRelayedPropertyValue> {
+public class ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> extends TargetBinding<TPropertyValue, TRelayedPropertyValue> {
+
 
     // region Constructor
 
-    BidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                              @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    ReverseUnidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                                      @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(relayProvider, targetProperty);
     }
 
-    public BidirectionalRelayBinding(@NotNull final ObjectProperty<TPropertyValue> observedProperty,
-                                     @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                                     @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    public ReverseUnidirectionalRelayBinding(@NotNull final ObjectProperty<TPropertyValue> observedProperty,
+                                             @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
+                                             @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
         super(observedProperty, relayProvider, targetProperty);
     }
 
@@ -47,19 +48,17 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> ex
     @Override
     protected void unbindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
-            if (property != null) {
-                property.unbindBidirectional(relayedProperty);
-            }
+            relayedProperty.unbind();
         }
     }
 
+    @SuppressWarnings ("Duplicates")
     @Override
     protected void bindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
-            if (property != null) {
-                property.bindBidirectional(relayedProperty);
+            ObjectProperty<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+            if (targetProperty != null) {
+                relayedProperty.bind(targetProperty);
             } else {
                 dispose();
             }

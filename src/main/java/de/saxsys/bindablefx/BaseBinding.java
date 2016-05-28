@@ -13,12 +13,12 @@
 
 package de.saxsys.bindablefx;
 
-import com.sun.istack.internal.Nullable;
 import javafx.beans.WeakListener;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;

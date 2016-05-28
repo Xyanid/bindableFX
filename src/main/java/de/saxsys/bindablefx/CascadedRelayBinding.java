@@ -123,7 +123,6 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> extends
      * @see #bindReverse(Function, ObservableValue)
      * @see #bindBidirectional(Function, Property)
      */
-    @NotNull
     public <TRelayedPropertyValueCascaded> UnidirectionalRelayBinding<TRelayedPropertyValue, TRelayedPropertyValueCascaded> bind(
             @NotNull final Function<TRelayedPropertyValue, ObservableValue<TRelayedPropertyValueCascaded>> relayProvider,
             @NotNull final Property<TRelayedPropertyValueCascaded> targetProperty) {

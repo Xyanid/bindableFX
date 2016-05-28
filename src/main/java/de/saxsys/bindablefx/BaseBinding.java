@@ -15,13 +15,11 @@ package de.saxsys.bindablefx;
 
 import javafx.beans.WeakListener;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Optional;
 
@@ -32,15 +30,15 @@ import java.util.Optional;
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue implements ChangeListener<TPropertyValue>, WeakListener {
+public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPropertyValue>, WeakListener {
 
     //region Fields
 
     /**
-     * Determines the {@link ObjectProperty} which is watched by this binding.
+     * Determines the {@link ObservableValue} which is watched by this binding.
      */
     @Nullable
-    private WeakReference<Property<TPropertyValue>> observedProperty;
+    private WeakReference<ObservableValue<TPropertyValue>> observedProperty;
 
     //endregion
 
@@ -56,7 +54,7 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue impleme
             return Optional.empty();
         }
 
-        Property<TPropertyValue> property = observedProperty.get();
+        ObservableValue<TPropertyValue> property = observedProperty.get();
         if (property != null) {
             return Optional.ofNullable(property.getValue());
         } else {
@@ -74,7 +72,7 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue impleme
      */
     void destroyObservedProperty() {
         if (observedProperty != null) {
-            Property<TPropertyValue> property = observedProperty.get();
+            ObservableValue<TPropertyValue> property = observedProperty.get();
             if (property != null) {
                 property.removeListener(this);
                 changed(property, property.getValue(), null);
@@ -86,9 +84,9 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue impleme
     /**
      * Sets the {@link #observedProperty} and adds the this binding as the listener.
      *
-     * @param observedProperty the {@link ObjectProperty} which will be used as the {@link #observedProperty}
+     * @param observedProperty the {@link ObservableValue} which will be used as the {@link #observedProperty}
      */
-    void createObservedProperty(@NotNull final Property<TPropertyValue> observedProperty) {
+    void createObservedProperty(@NotNull final ObservableValue<TPropertyValue> observedProperty) {
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
         this.observedProperty = new WeakReference<>(observedProperty);
         observedProperty.addListener(this);
@@ -102,7 +100,7 @@ public abstract class BaseBinding<TPropertyValue> extends ReferenceQueue impleme
     /**
      * Removes this binding as the listener from the {@link #observedProperty}, invokes a call to {@link #changed(ObservableValue, Object, Object)} with the oldValue and then
      * sets the {@link #observedProperty} to null. After the call, this {@link BaseBinding} will not longer work and the {@link #observedProperty} needs to be reset using
-     * {@link #createObservedProperty(Property)}.
+     * {@link #createObservedProperty(ObservableValue)}.
      */
     public void dispose() {
         destroyObservedProperty();

@@ -14,7 +14,7 @@
 package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +27,7 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> extends RelayBinding<TPropertyValue, TRelayedPropertyValue> {
+public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTargetProperty> extends RelayBinding<TPropertyValue, TRelayedProperty> {
 
     // region Fields
 
@@ -35,21 +35,21 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      * This is the target property that will be bound to the relayed {@link ObjectProperty} which is provided by applying the value of the
      * {@link #observedProperty} to the {@link #relayProvider}.
      */
-    private final WeakReference<Property<TRelayedPropertyValue>> targetProperty;
+    private final WeakReference<TTargetProperty> targetProperty;
 
     // endregion
 
     // region Constructor
 
-    protected TargetBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider, @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+    protected TargetBinding(@NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider, @NotNull final TTargetProperty targetProperty) {
         super(relayProvider);
 
         this.targetProperty = new WeakReference<>(targetProperty);
     }
 
-    protected TargetBinding(@NotNull final Property<TPropertyValue> observedProperty,
-                            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
-                            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+    protected TargetBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
+                            @NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider,
+                            @NotNull final TTargetProperty targetProperty) {
         this(relayProvider, targetProperty);
 
         createObservedProperty(observedProperty);
@@ -65,7 +65,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      * @return the {@link #targetProperty}.
      */
     @Nullable
-    protected final Property<TRelayedPropertyValue> getTargetPropertyProperty() {
+    protected final TTargetProperty getTargetPropertyProperty() {
         return targetProperty.get();
     }
 

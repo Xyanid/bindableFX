@@ -13,8 +13,6 @@
 
 package de.saxsys.bindablefx;
 
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,24 +21,24 @@ import java.util.function.Function;
 
 /**
  * This class will act as a relay binding, meaning when the {@link #observedProperty} is changed the {@link #relayProvider} will be invoked, so that the
- * next desired {@link ObjectProperty} will be know using the new value. This also applies to the old value, so that an unbinding is also possible.
+ * next desired {@link ObservableValue} will be know using the new value. This also applies to the old value, so that an unbinding is also possible.
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extends BaseBinding<TPropertyValue> {
+public abstract class RelayBinding<TPropertyValue, TRelayedProperty> extends BaseBinding<TPropertyValue> {
 
     // region Fields
 
     /**
      * This {@link Function} is called when the underlying {@link #observedProperty} has changed and we need a new property which we can then use.
      */
-    private final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider;
+    private final Function<TPropertyValue, TRelayedProperty> relayProvider;
 
     // endregion
 
     // region Constructor
 
-    protected RelayBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider) {
+    protected RelayBinding(@NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider) {
         super();
 
         this.relayProvider = relayProvider;
@@ -55,7 +53,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @return the {@link #relayProvider}.
      */
-    protected final Function<TPropertyValue, Property<TRelayedPropertyValue>> getRelayProvider() {
+    protected final Function<TPropertyValue, TRelayedProperty> getRelayProvider() {
         return relayProvider;
     }
 
@@ -65,19 +63,19 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
 
     /**
      * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the old value, so the old
-     * {@link ObjectProperty} can be unbound. This will only happen if the old value is not null.
+     * {@link ObservableValue} can be unbound. This will only happen if the old value is not null.
      *
-     * @param relayedProperty the {@link ObjectProperty} which was previously bound.
+     * @param relayedProperty the {@link ObservableValue} which was previously bound.
      */
-    protected abstract void unbindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty);
+    protected abstract void unbindProperty(@Nullable final TRelayedProperty relayedProperty);
 
     /**
      * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the new value, so the new
-     * {@link ObjectProperty} can be bound. This will only happen if the new value is not null.
+     * {@link ObservableValue} can be bound. This will only happen if the new value is not null.
      *
-     * @param relayedProperty the {@link ObjectProperty} which was set and needs to be bound now.
+     * @param relayedProperty the {@link ObservableValue} which was set and needs to be bound now.
      */
-    protected abstract void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty);
+    protected abstract void bindProperty(@Nullable final TRelayedProperty relayedProperty);
 
     // endregion
 

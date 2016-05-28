@@ -15,6 +15,7 @@ package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,19 +27,20 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public class ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> extends TargetBinding<TPropertyValue, TRelayedPropertyValue> {
+public class ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
+        extends TargetBinding<TPropertyValue, Property<TRelayedPropertyValue>, ObservableValue<TRelayedPropertyValue>> {
 
 
     // region Constructor
 
     ReverseUnidirectionalRelayBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
-                                      @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+                                      @NotNull final ObservableValue<TRelayedPropertyValue> targetProperty) {
         super(relayProvider, targetProperty);
     }
 
-    public ReverseUnidirectionalRelayBinding(@NotNull final Property<TPropertyValue> observedProperty,
+    public ReverseUnidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
                                              @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
-                                             final @NotNull Property<TRelayedPropertyValue> targetProperty) {
+                                             final @NotNull ObservableValue<TRelayedPropertyValue> targetProperty) {
         super(observedProperty, relayProvider, targetProperty);
     }
 
@@ -57,7 +59,7 @@ public class ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyV
     @Override
     protected void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            Property<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+            ObservableValue<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
             if (targetProperty != null) {
                 relayedProperty.bind(targetProperty);
             } else {

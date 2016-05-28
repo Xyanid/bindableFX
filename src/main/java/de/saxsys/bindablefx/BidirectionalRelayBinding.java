@@ -15,6 +15,7 @@ package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +27,8 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> extends TargetBinding<TPropertyValue, TRelayedPropertyValue> {
+public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
+        extends TargetBinding<TPropertyValue, Property<TRelayedPropertyValue>, Property<TRelayedPropertyValue>> {
 
     // region Constructor
 
@@ -35,7 +37,7 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> ex
         super(relayProvider, targetProperty);
     }
 
-    public BidirectionalRelayBinding(@NotNull final Property<TPropertyValue> observedProperty,
+    public BidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
                                      @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
                                      @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         super(observedProperty, relayProvider, targetProperty);

@@ -110,31 +110,32 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
         assertFalse(bindingC.getCurrentObservedValue().isPresent());
 
-        a.bProperty().get().cProperty().set(new C());
+        a.bProperty().getValue().cProperty().setValue(new C());
 
         assertTrue(bindingC.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty(), TestUtil.getObservedProperty(bindingC).get());
-        assertEquals(a.bProperty().get().cProperty().get(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedProperty(bindingC).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
         assertFalse(bindingD.getCurrentObservedValue().isPresent());
 
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
 
         assertTrue(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty(), TestUtil.getObservedProperty(bindingD).get());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get(), bindingD.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedProperty(bindingD).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue(), bindingD.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
         assertFalse(bindingE.getCurrentObservedValue().isPresent());
 
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty(), TestUtil.getObservedProperty(bindingE).get());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty().get(), bindingE.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty(), TestUtil.getObservedProperty(bindingE).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue(),
+                     bindingE.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
     }
 
     /**
@@ -143,10 +144,10 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void creatingACascadedChainForAlreadySetObservedPropertiesWillSetTheBindings() throws Throwable {
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         cut = new CascadedRelayBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
@@ -157,22 +158,23 @@ public class CascadedRelayBindingIntegrationTest {
 
         // binding for B know what to do
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for C know what to do
         assertTrue(bindingC.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty(), TestUtil.getObservedProperty(bindingC).get());
-        assertEquals(a.bProperty().get().cProperty().get(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedProperty(bindingC).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for D know what to do
         assertTrue(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty(), TestUtil.getObservedProperty(bindingD).get());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get(), bindingD.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedProperty(bindingD).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue(), bindingD.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for E know what to do
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty(), TestUtil.getObservedProperty(bindingE).get());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty().get(), bindingE.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty(), TestUtil.getObservedProperty(bindingE).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue(),
+                     bindingE.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
     }
 
     //endregion
@@ -185,10 +187,10 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void changingAObservedPropertyWillEffectAllChildBindings() throws Throwable {
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         cut = new CascadedRelayBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
@@ -197,37 +199,37 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        C oldC = a.bProperty().get().cProperty().get();
+        C oldC = a.bProperty().getValue().cProperty().getValue();
 
-        a.bProperty().get().cProperty().set(new C());
+        a.bProperty().getValue().cProperty().setValue(new C());
 
         // binding for C know what to do
         assertTrue(bindingC.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty(), TestUtil.getObservedProperty(bindingC).get());
-        assertEquals(a.bProperty().get().cProperty().get(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedProperty(bindingC).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
         assertNotEquals(oldC, bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for D now knows nothing
         assertFalse(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty(), TestUtil.getObservedProperty(bindingD).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedProperty(bindingD).get());
 
         // binding for E now knows nothing
         assertFalse(bindingE.getCurrentObservedValue().isPresent());
         assertNull(TestUtil.getObservedProperty(bindingE));
 
         // change D
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
 
         // binding for D now knows what to do
         assertTrue(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get(), bindingD.getCurrentObservedValue().get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue(), bindingD.getCurrentObservedValue().get());
 
         // change E
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // binding for D now knows what to do
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty().get(), bindingE.getCurrentObservedValue().get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue(), bindingE.getCurrentObservedValue().get());
     }
 
     /**
@@ -236,10 +238,10 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void changingAnObservedPropertyThatIsNoLongerBoundWillHaveNoEffectOnTheBindingChain() throws Throwable {
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         cut = new CascadedRelayBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
@@ -248,33 +250,33 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        C oldC = a.bProperty().get().cProperty().get();
+        C oldC = a.bProperty().getValue().cProperty().getValue();
 
-        a.bProperty().get().cProperty().set(new C());
+        a.bProperty().getValue().cProperty().setValue(new C());
 
         // binding for C know what to do
         assertTrue(bindingC.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty(), TestUtil.getObservedProperty(bindingC).get());
-        assertEquals(a.bProperty().get().cProperty().get(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedProperty(bindingC).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
         assertNotEquals(oldC, bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for D now knows nothing
         assertFalse(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty(), TestUtil.getObservedProperty(bindingD).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedProperty(bindingD).get());
 
         // binding for E now knows nothing
         assertFalse(bindingE.getCurrentObservedValue().isPresent());
         assertNull(TestUtil.getObservedProperty(bindingE));
 
         // set the old C with a new D
-        oldC.dProperty().set(new D());
+        oldC.dProperty().setValue(new D());
 
         // binding for D still knows nothing
         assertFalse(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty(), TestUtil.getObservedProperty(bindingD).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedProperty(bindingD).get());
 
         // set the new D with a new E
-        oldC.dProperty().get().eProperty().set(new E());
+        oldC.dProperty().getValue().eProperty().setValue(new E());
 
         // binding for E still knows nothing
         assertFalse(bindingE.getCurrentObservedValue().isPresent());
@@ -294,16 +296,16 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(2L);
 
         // binding for E is disposed
         assertThat(bindingE, instanceOf(UnidirectionalRelayBinding.class));
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -319,16 +321,16 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
-        x.set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
+        x.setValue(2L);
 
         // binding for E is disposed
         assertThat(bindingE, instanceOf(ReverseUnidirectionalRelayBinding.class));
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -344,10 +346,10 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
 
         // binding for E is disposed
@@ -355,12 +357,12 @@ public class CascadedRelayBindingIntegrationTest {
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
 
         // otherX will adjust the Es x property
-        x.set(2L);
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        x.setValue(2L);
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
 
         // otherX will adjust the Es x property
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().set(3L);
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
     }
 
     //endregion
@@ -375,18 +377,18 @@ public class CascadedRelayBindingIntegrationTest {
 
         bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // otherX will adjust the Es x property
-        x.set(2L);
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        x.setValue(2L);
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
 
         // otherX will adjust the Es x property
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().set(3L);
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -397,28 +399,28 @@ public class CascadedRelayBindingIntegrationTest {
 
         bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // otherX will adjust the Es x property
-        x.set(2L);
-        assertEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        x.setValue(2L);
+        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
 
         a = null;
 
         System.gc();
 
         a = new A();
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // otherX will adjust the Es x property
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().set(3L);
-        assertNotEquals(x.get(), a.bProperty().get().cProperty().get().dProperty().get().eProperty().get().xProperty().get());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
+        assertNotEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
     }
 
     //endregion
@@ -440,19 +442,19 @@ public class CascadedRelayBindingIntegrationTest {
 
         bindingC.dispose();
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // binding for B know what to do
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for C know what to do
-        assertEquals(a.bProperty().get().cProperty(), TestUtil.getObservedProperty(bindingC).get());
+        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedProperty(bindingC).get());
         assertTrue(bindingC.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for D is disposed
         assertFalse(bindingD.getCurrentObservedValue().isPresent());
@@ -476,39 +478,40 @@ public class CascadedRelayBindingIntegrationTest {
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
         BaseBinding bindingE = TestUtil.getChild((CascadedRelayBinding) bindingD);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // binding for B know what to do
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue(), cut.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for C know what to do
-        assertEquals(a.bProperty().get().cProperty(), TestUtil.getObservedProperty(bindingC).get());
+        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedProperty(bindingC).get());
         assertTrue(bindingC.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for D know what to do
-        assertEquals(a.bProperty().get().cProperty().get().dProperty(), TestUtil.getObservedProperty(bindingD).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedProperty(bindingD).get());
         assertTrue(bindingD.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get(), bindingD.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue(), bindingD.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         // binding for E know what to do
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty(), TestUtil.getObservedProperty(bindingE).get());
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty(), TestUtil.getObservedProperty(bindingE).get());
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
-        assertEquals(a.bProperty().get().cProperty().get().dProperty().get().eProperty().get(), bindingE.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
+        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue(),
+                     bindingE.getCurrentObservedValue().orElseThrow(IllegalArgumentException::new));
 
         a = null;
 
         System.gc();
 
         a = new A();
-        a.bProperty().set(new B());
-        a.bProperty().get().cProperty().set(new C());
-        a.bProperty().get().cProperty().get().dProperty().set(new D());
-        a.bProperty().get().cProperty().get().dProperty().get().eProperty().set(new E());
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().cProperty().setValue(new C());
+        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
+        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
         // binding for B is disposed

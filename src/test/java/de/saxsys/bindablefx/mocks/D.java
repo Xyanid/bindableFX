@@ -13,7 +13,7 @@
 
 package de.saxsys.bindablefx.mocks;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -24,19 +24,19 @@ public class D {
     /**
      * Determines the e
      */
-    private final ObjectProperty<E> e = new SimpleObjectProperty<>();
+    private final Property<E> e = new SimpleObjectProperty<>();
 
     /**
      * Determines the x
      */
-    private final ObjectProperty<Long> x = new SimpleObjectProperty<>();
+    private final Property<Long> x = new SimpleObjectProperty<>();
 
     /**
      * Gets the property {@link #e}.
      *
      * @return the {@link #e} property.
      */
-    public final ObjectProperty<E> eProperty() {
+    public final Property<E> eProperty() {
         return e;
     }
 
@@ -45,7 +45,7 @@ public class D {
      *
      * @return the {@link #x} property.
      */
-    public final ObjectProperty<Long> xProperty() {
+    public final Property<Long> xProperty() {
         return x;
     }
 }

@@ -14,6 +14,7 @@
 package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,22 +35,21 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      * This is the target property that will be bound to the relayed {@link ObjectProperty} which is provided by applying the value of the
      * {@link #observedProperty} to the {@link #relayProvider}.
      */
-    private final WeakReference<ObjectProperty<TRelayedPropertyValue>> targetProperty;
+    private final WeakReference<Property<TRelayedPropertyValue>> targetProperty;
 
     // endregion
 
     // region Constructor
 
-    protected TargetBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    protected TargetBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider, @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         super(relayProvider);
 
         this.targetProperty = new WeakReference<>(targetProperty);
     }
 
-    protected TargetBinding(@NotNull final ObjectProperty<TPropertyValue> observedProperty,
-                            @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    protected TargetBinding(@NotNull final Property<TPropertyValue> observedProperty,
+                            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+                            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         this(relayProvider, targetProperty);
 
         createObservedProperty(observedProperty);
@@ -65,7 +65,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedPropertyValue> exten
      * @return the {@link #targetProperty}.
      */
     @Nullable
-    protected final ObjectProperty<TRelayedPropertyValue> getTargetPropertyProperty() {
+    protected final Property<TRelayedPropertyValue> getTargetPropertyProperty() {
         return targetProperty.get();
     }
 

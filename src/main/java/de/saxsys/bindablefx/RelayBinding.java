@@ -14,6 +14,7 @@
 package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,13 +34,13 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
     /**
      * This {@link Function} is called when the underlying {@link #observedProperty} has changed and we need a new property which we can then use.
      */
-    private final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider;
+    private final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider;
 
     // endregion
 
     // region Constructor
 
-    protected RelayBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider) {
+    protected RelayBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider) {
         super();
 
         this.relayProvider = relayProvider;
@@ -54,7 +55,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @return the {@link #relayProvider}.
      */
-    protected final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> getRelayProvider() {
+    protected final Function<TPropertyValue, Property<TRelayedPropertyValue>> getRelayProvider() {
         return relayProvider;
     }
 
@@ -68,7 +69,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @param relayedProperty the {@link ObjectProperty} which was previously bound.
      */
-    protected abstract void unbindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty);
+    protected abstract void unbindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty);
 
     /**
      * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the new value, so the new
@@ -76,7 +77,7 @@ public abstract class RelayBinding<TPropertyValue, TRelayedPropertyValue> extend
      *
      * @param relayedProperty the {@link ObjectProperty} which was set and needs to be bound now.
      */
-    protected abstract void bindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty);
+    protected abstract void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty);
 
     // endregion
 

@@ -13,7 +13,7 @@
 
 package de.saxsys.bindablefx.mocks;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
@@ -24,13 +24,14 @@ public class A {
     /**
      * Determines the b
      */
-    private final ObjectProperty<B> b = new SimpleObjectProperty<>();
+    private final Property<B> b = new SimpleObjectProperty<>();
 
     /**
      * Gets the property {@link #b}.
+     *
      * @return the {@link #b} property.
      */
-    public final ObjectProperty<B> bProperty() {
+    public final Property<B> bProperty() {
         return b;
     }
 }

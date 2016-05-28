@@ -13,13 +13,13 @@
 
 package de.saxsys.bindablefx;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
 /**
- * This binding will allow for unidirectional binding between the {@link #targetProperty} and {@link ObjectProperty} which is supplied by the {@link #relayProvider} for the
+ * This binding will allow for unidirectional binding between the {@link #targetProperty} and {@link Property} which is supplied by the {@link #relayProvider} for the
  * value of the {@link #observedProperty}. So the {@link #targetProperty} will have the same value as the relayed property.
  *
  * @author xyanid on 30.03.2016.
@@ -29,13 +29,13 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> e
 
     // region Constructor
 
-    UnidirectionalRelayBinding(final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider, final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    UnidirectionalRelayBinding(final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider, final Property<TRelayedPropertyValue> targetProperty) {
         super(relayProvider, targetProperty);
     }
 
-    public UnidirectionalRelayBinding(final ObjectProperty<TPropertyValue> observedProperty,
-                                      final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                                      final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    public UnidirectionalRelayBinding(final Property<TPropertyValue> observedProperty,
+                                      final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+                                      final Property<TRelayedPropertyValue> targetProperty) {
         super(observedProperty, relayProvider, targetProperty);
     }
 
@@ -44,8 +44,8 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> e
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
-        ObjectProperty<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+    protected void unbindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
+        Property<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
         if (targetProperty != null) {
             targetProperty.unbind();
         }
@@ -53,9 +53,9 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> e
 
     @SuppressWarnings ("Duplicates")
     @Override
-    protected void bindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
+    protected void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            ObjectProperty<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+            Property<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
             if (targetProperty != null) {
                 targetProperty.bind(relayedProperty);
             } else {

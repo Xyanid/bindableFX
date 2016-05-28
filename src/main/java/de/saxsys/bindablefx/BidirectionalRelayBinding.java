@@ -14,6 +14,7 @@
 package de.saxsys.bindablefx;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,14 +30,14 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> ex
 
     // region Constructor
 
-    BidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                              @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    BidirectionalRelayBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+                              @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         super(relayProvider, targetProperty);
     }
 
-    public BidirectionalRelayBinding(@NotNull final ObjectProperty<TPropertyValue> observedProperty,
-                                     @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-                                     @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+    public BidirectionalRelayBinding(@NotNull final Property<TPropertyValue> observedProperty,
+                                     @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+                                     @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         super(observedProperty, relayProvider, targetProperty);
     }
 
@@ -45,9 +46,9 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> ex
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
+    protected void unbindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
+            Property<TRelayedPropertyValue> property = getTargetPropertyProperty();
             if (property != null) {
                 property.unbindBidirectional(relayedProperty);
             }
@@ -55,9 +56,9 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> ex
     }
 
     @Override
-    protected void bindProperty(@Nullable final ObjectProperty<TRelayedPropertyValue> relayedProperty) {
+    protected void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            ObjectProperty<TRelayedPropertyValue> property = getTargetPropertyProperty();
+            Property<TRelayedPropertyValue> property = getTargetPropertyProperty();
             if (property != null) {
                 property.bindBidirectional(relayedProperty);
             } else {

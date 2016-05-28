@@ -70,11 +70,11 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
 
-        a.bProperty().set(null);
+        a.bProperty().setValue(null);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
     }
@@ -85,7 +85,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
     @Test
     public void creatingABindingWhenTheObservedPropertyIsAlreadySetWillBindTheTargetPropertyAgainstTheRelayedProperty() throws Throwable {
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
@@ -93,7 +93,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut.dispose();
 
-        a.bProperty().set(null);
+        a.bProperty().setValue(null);
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
@@ -110,12 +110,12 @@ public class UnidirectionalRelayBindingIntegrationTest {
     @Test
     public void whenTheTargetPropertyAndTheObservedPropertyAreAlreadySetTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
 
-        x.set(2L);
-        a.bProperty().set(new B());
+        x.setValue(2L);
+        a.bProperty().setValue(new B());
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -124,13 +124,13 @@ public class UnidirectionalRelayBindingIntegrationTest {
     @Test
     public void whenTheTargetPropertyAndTheRelayedPropertyAreAlreadySetTheRelayedPropertyWillBePreferred() {
 
-        x.set(2L);
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(10L);
+        x.setValue(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(10L);
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        assertEquals(10L, x.get().longValue());
+        assertEquals(10L, x.getValue().longValue());
     }
 
     /**
@@ -141,10 +141,10 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        x.set(2L);
+        a.bProperty().setValue(new B());
+        x.setValue(2L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -155,10 +155,10 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        x.set(2L);
-        a.bProperty().set(new B());
+        x.setValue(2L);
+        a.bProperty().setValue(new B());
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -169,10 +169,10 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -181,13 +181,13 @@ public class UnidirectionalRelayBindingIntegrationTest {
     @Test
     public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
 
-        x.set(2L);
+        x.setValue(2L);
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -196,13 +196,13 @@ public class UnidirectionalRelayBindingIntegrationTest {
     @Test
     public void whenTheRelayedPropertyChangesAndTheObservedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().get().xProperty().set(2L);
+        a.bProperty().getValue().xProperty().setValue(2L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -211,12 +211,12 @@ public class UnidirectionalRelayBindingIntegrationTest {
     @Test
     public void whenTheRelayedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValue() {
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     //endregion
@@ -230,16 +230,16 @@ public class UnidirectionalRelayBindingIntegrationTest {
     public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
         bindRelayed(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(20L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(20L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
-        a.bProperty().set(null);
-        x.set(10L);
-        a.bProperty().set(new B());
+        a.bProperty().setValue(null);
+        x.setValue(10L);
+        a.bProperty().setValue(new B());
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -249,21 +249,21 @@ public class UnidirectionalRelayBindingIntegrationTest {
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
         bindRelayed(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(10L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(10L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
         x = null;
 
         System.gc();
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(10L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(10L);
         x = new SimpleObjectProperty<>();
-        x.set(20L);
+        x.setValue(20L);
 
-        assertNotEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     // endregion
@@ -280,13 +280,13 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
 
         cut.dispose();
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
     }
@@ -299,7 +299,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         assertNotNull(cut.getTargetPropertyProperty());
 
@@ -316,16 +316,16 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
         cut.dispose();
 
-        a.bProperty().get().xProperty().set(10L);
+        a.bProperty().getValue().xProperty().setValue(10L);
 
-        assertNotEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -336,8 +336,8 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
         assertNotNull(cut.getTargetPropertyProperty());
@@ -346,7 +346,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         System.gc();
 
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
         assertNull(cut.getTargetPropertyProperty());
@@ -360,10 +360,10 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().set(new B());
-        a.bProperty().get().xProperty().set(2L);
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
 
-        assertEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
         assertNotNull(cut.getTargetPropertyProperty());
 
@@ -372,9 +372,9 @@ public class UnidirectionalRelayBindingIntegrationTest {
         System.gc();
 
         a = new A();
-        a.bProperty().set(new B());
+        a.bProperty().setValue(new B());
 
-        assertNotEquals(x.get(), a.bProperty().get().xProperty().get());
+        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
         //assertNull(TestUtil.getObservedProperty(cut));

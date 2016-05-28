@@ -13,7 +13,7 @@
 
 package de.saxsys.bindablefx;
 
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.Property;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
@@ -39,17 +39,16 @@ public final class Bindings {
     /**
      * Creates a new {@link CascadedRelayBinding} using the given information.
      *
-     * @param property                the {@link ObjectProperty} the binding will be observing for changes.
+     * @param property                the {@link Property} the binding will be observing for changes.
      * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
      * @param <TPropertyValue>        the type of the value of the observed property.
      * @param <TRelayedPropertyValue> the type of the value of the relayed property.
      *
      * @return a new {@link CascadedRelayBinding}.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedCascaded(final ObjectProperty<TPropertyValue>
+    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedCascaded(final Property<TPropertyValue>
                                                                                                                                                   property,
-                                                                                                                                          final Function<TPropertyValue,
-                                                                                                                                                  ObjectProperty
+                                                                                                                                          final Function<TPropertyValue, Property
                                                                                                                                                           <TRelayedPropertyValue>> relayProvider) {
         return new CascadedRelayBinding<>(property, relayProvider);
     }
@@ -57,54 +56,54 @@ public final class Bindings {
     /**
      * Creates a new {@link UnidirectionalRelayBinding} that is not reversed using the given information.
      *
-     * @param observedProperty        the {@link ObjectProperty} that is observed for changes.
+     * @param observedProperty        the {@link Property} that is observed for changes.
      * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
-     * @param targetProperty          the {@link ObjectProperty} to bind the relayedProperty against.
+     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
      * @param <TPropertyValue>        the type of the value of the observed property.
      * @param <TRelayedPropertyValue> the type of the value of the relayed property.
      *
      * @return a new {@link UnidirectionalRelayBinding}.
      */
     public static <TPropertyValue, TRelayedPropertyValue> UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayed(
-            @NotNull final ObjectProperty<TPropertyValue> observedProperty,
-            @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+            @NotNull final Property<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         return new UnidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty);
     }
 
     /**
      * Creates a new {@link ReverseUnidirectionalRelayBinding} using the given information.
      *
-     * @param observedProperty        the {@link ObjectProperty} that is observed for changes.
+     * @param observedProperty        the {@link Property} that is observed for changes.
      * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
-     * @param targetProperty          the {@link ObjectProperty} to bind the relayedProperty against.
+     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
      * @param <TPropertyValue>        the type of the value of the observed property.
      * @param <TRelayedPropertyValue> the type of the value of the relayed property.
      *
      * @return a new {@link ReverseUnidirectionalRelayBinding}.
      */
     public static <TPropertyValue, TRelayedPropertyValue> ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindReversedRelayed(
-            @NotNull final ObjectProperty<TPropertyValue> observedProperty,
-            @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+            @NotNull final Property<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         return new ReverseUnidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty);
     }
 
     /**
      * Creates a new {@link BidirectionalRelayBinding} using the given information.
      *
-     * @param observedProperty        the {@link ObjectProperty} that is observed for changes.
+     * @param observedProperty        the {@link Property} that is observed for changes.
      * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
-     * @param targetProperty          the {@link ObjectProperty} to bind the relayedProperty against.
+     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
      * @param <TPropertyValue>        the type of the value of the observed property.
      * @param <TRelayedPropertyValue> the type of the value of the relayed property.
      *
      * @return a new {@link BidirectionalRelayBinding}.
      */
     public static <TPropertyValue, TRelayedPropertyValue> BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedBidirectional(
-            @NotNull final ObjectProperty<TPropertyValue> observedProperty,
-            @NotNull final Function<TPropertyValue, ObjectProperty<TRelayedPropertyValue>> relayProvider,
-            @NotNull final ObjectProperty<TRelayedPropertyValue> targetProperty) {
+            @NotNull final Property<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
         return new BidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty);
     }
 

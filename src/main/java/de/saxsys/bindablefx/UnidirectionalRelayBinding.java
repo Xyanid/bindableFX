@@ -29,18 +29,43 @@ import java.util.function.Function;
 public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
         extends TargetBinding<TPropertyValue, ObservableValue<TRelayedPropertyValue>, Property<TRelayedPropertyValue>> {
 
+    // region Fields
+
+    /**
+     * Determines if the {@link #targetProperty} will be set to null when the binding is unbound.
+     */
+    private final boolean willResetTargetProperty;
+
+    // endregion
 
     // region Constructor
 
     UnidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
-                               @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+                               @NotNull final Property<TRelayedPropertyValue> targetProperty,
+                               final boolean willResetTargetProperty) {
         super(relayProvider, targetProperty);
+
+        this.willResetTargetProperty = willResetTargetProperty;
+    }
+
+    UnidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
+                               @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+        this(relayProvider, targetProperty, false);
+    }
+
+    public UnidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
+                                      @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
+                                      @NotNull final Property<TRelayedPropertyValue> targetProperty,
+                                      final boolean willResetTargetProperty) {
+        super(observedProperty, relayProvider, targetProperty);
+
+        this.willResetTargetProperty = willResetTargetProperty;
     }
 
     public UnidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
                                       @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
                                       @NotNull final Property<TRelayedPropertyValue> targetProperty) {
-        super(observedProperty, relayProvider, targetProperty);
+        this(observedProperty, relayProvider, targetProperty, false);
     }
 
     // endregion
@@ -49,9 +74,12 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
 
     @Override
     protected void unbindProperty(@Nullable final ObservableValue<TRelayedPropertyValue> relayedProperty) {
-        Property<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+        Property<TRelayedPropertyValue> targetProperty = getTargetProperty();
         if (targetProperty != null) {
             targetProperty.unbind();
+            if (willResetTargetProperty) {
+                targetProperty.setValue(null);
+            }
         }
     }
 
@@ -59,7 +87,7 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
     @Override
     protected void bindProperty(@Nullable final ObservableValue<TRelayedPropertyValue> relayedProperty) {
         if (relayedProperty != null) {
-            Property<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+            Property<TRelayedPropertyValue> targetProperty = getTargetProperty();
             if (targetProperty != null) {
                 targetProperty.bind(relayedProperty);
             } else {

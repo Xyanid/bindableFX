@@ -290,7 +290,7 @@ public class CascadedRelayBindingIntegrationTest {
     public void creatingAUnidirectionalBindingWillAllowToBindTheRelayedProperty() {
 
         cut = new CascadedRelayBinding<>(a.bProperty(), B::cProperty);
-        cut.attach(C::dProperty).attach(D::eProperty).bind(E::xProperty, x);
+        cut.attach(C::dProperty).attach(D::eProperty).bind(E::xProperty, x, true);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
@@ -340,7 +340,7 @@ public class CascadedRelayBindingIntegrationTest {
     public void creatingABidirectionalBindingWillAllowToBindTheRelayedProperty() {
 
         cut = new CascadedRelayBinding<>(a.bProperty(), B::cProperty);
-        cut.attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
+        cut.attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x, true);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
         BaseBinding bindingD = TestUtil.getChild((CascadedRelayBinding) bindingC);
@@ -375,7 +375,7 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void creatingABindingWithOutAStrongReferenceWillAllowToBindTheRelayedPropertyWhenTheObservedPropertiesAreChanged() {
 
-        bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
+        bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x, true);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());
@@ -397,7 +397,7 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheFirstObservedPropertyWillDisposeTheEntireCascadedChain() {
 
-        bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
+        bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x, true);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());

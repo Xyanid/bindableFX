@@ -274,11 +274,11 @@ public class ReverseUnidirectionalRelayBindingIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTargetProperty());
 
         cut.dispose();
 
-        assertNull(cut.getTargetPropertyProperty());
+        assertNull(cut.getTargetProperty());
     }
 
     /**
@@ -313,7 +313,7 @@ public class ReverseUnidirectionalRelayBindingIntegrationTest {
         x.setValue(2L);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTargetProperty());
 
         a.bProperty().setValue(null);
         x = null;
@@ -323,7 +323,7 @@ public class ReverseUnidirectionalRelayBindingIntegrationTest {
         a.bProperty().setValue(new B());
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
-        assertNull(cut.getTargetPropertyProperty());
+        assertNull(cut.getTargetProperty());
     }
 
     /**
@@ -339,7 +339,7 @@ public class ReverseUnidirectionalRelayBindingIntegrationTest {
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTargetProperty());
 
         a = null;
 
@@ -352,7 +352,7 @@ public class ReverseUnidirectionalRelayBindingIntegrationTest {
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
         //assertNull(TestUtil.getObservedProperty(cut));
-        //assertNull(cut.getTargetPropertyProperty());
+        //assertNull(cut.getTargetProperty());
     }
 
     // endregion

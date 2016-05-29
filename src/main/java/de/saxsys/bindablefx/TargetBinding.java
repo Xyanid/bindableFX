@@ -63,9 +63,22 @@ public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTargetPro
      * Returns the {@link #targetProperty}.
      *
      * @return the {@link #targetProperty}.
+     *
+     * @deprecated will be removed in the next release use {@link #getTargetProperty()} instead.
      */
     @Nullable
+    @Deprecated
     protected final TTargetProperty getTargetPropertyProperty() {
+        return getTargetProperty();
+    }
+
+    /**
+     * Returns the {@link #targetProperty}.
+     *
+     * @return the {@link #targetProperty}.
+     */
+    @Nullable
+    protected final TTargetProperty getTargetProperty() {
         return targetProperty.get();
     }
 

@@ -16,6 +16,7 @@ package de.saxsys.bindablefx;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -48,29 +49,9 @@ public final class Bindings {
      *
      * @return a new {@link CascadedRelayBinding}.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedCascaded(
+    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> attach(
             @NotNull final ObservableValue<TPropertyValue> property, @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider) {
         return new CascadedRelayBinding<>(property, relayProvider);
-    }
-
-    /**
-     * Creates a new {@link UnidirectionalRelayBinding} using the given information.
-     *
-     * @param observedProperty        the {@link Property} that is observed for changes.
-     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
-     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
-     * @param willResetTargetProperty determines if the target property will be set to null when its unbound.
-     * @param <TPropertyValue>        the type of the value of the observed property.
-     * @param <TRelayedPropertyValue> the type of the value of the relayed property.
-     *
-     * @return a new {@link UnidirectionalRelayBinding}.
-     */
-    public static <TPropertyValue, TRelayedPropertyValue> UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayed(
-            @NotNull final ObservableValue<TPropertyValue> observedProperty,
-            @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
-            @NotNull final Property<TRelayedPropertyValue> targetProperty,
-            final boolean willResetTargetProperty) {
-        return new UnidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty, willResetTargetProperty);
     }
 
     /**
@@ -84,11 +65,31 @@ public final class Bindings {
      *
      * @return a new {@link UnidirectionalRelayBinding}.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayed(
+    public static <TPropertyValue, TRelayedPropertyValue> UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bind(
             @NotNull final ObservableValue<TPropertyValue> observedProperty,
             @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
             @NotNull final Property<TRelayedPropertyValue> targetProperty) {
-        return new UnidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty, false);
+        return new UnidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty);
+    }
+
+    /**
+     * Creates a new {@link ResettableUnidirectionalRelayBinding} using the given information.
+     *
+     * @param observedProperty        the {@link Property} that is observed for changes.
+     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
+     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
+     * @param resetValue              value to use when the target property gets unbound.
+     * @param <TPropertyValue>        the type of the value of the observed property.
+     * @param <TRelayedPropertyValue> the type of the value of the relayed property.
+     *
+     * @return a new {@link ResettableUnidirectionalRelayBinding}.
+     */
+    public static <TPropertyValue, TRelayedPropertyValue> ResettableUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bind(
+            @NotNull final ObservableValue<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Property<TRelayedPropertyValue> targetProperty,
+            @Nullable final TRelayedPropertyValue resetValue) {
+        return new ResettableUnidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty, resetValue);
     }
 
     /**
@@ -102,7 +103,7 @@ public final class Bindings {
      *
      * @return a new {@link ReverseUnidirectionalRelayBinding}.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindReversedRelayed(
+    public static <TPropertyValue, TRelayedPropertyValue> ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindReverse(
             @NotNull final ObservableValue<TPropertyValue> observedProperty,
             @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
             @NotNull final ObservableValue<TRelayedPropertyValue> targetProperty) {
@@ -120,49 +121,136 @@ public final class Bindings {
      *
      * @return a new {@link BidirectionalRelayBinding}.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedBidirectional(
+    public static <TPropertyValue, TRelayedPropertyValue> BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindBidirectional(
             @NotNull final ObservableValue<TPropertyValue> observedProperty,
             @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
             @NotNull final Property<TRelayedPropertyValue> targetProperty) {
-        return new BidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty, false);
+        return new BidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty);
     }
 
     /**
-     * Creates a new {@link BidirectionalRelayBinding} using the given information.
+     * Creates a new {@link ResettableBidirectionalRelayBinding} using the given information.
      *
      * @param observedProperty        the {@link ObservableValue} that is observed for changes.
      * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
      * @param targetProperty          the {@link Property} to bind the relayedProperty against.
-     * @param willResetTargetProperty determines if the target property will be set to null when its unbound.
+     * @param resetValue              value to use when the target property gets unbound.
      * @param <TPropertyValue>        the type of the value of the observed property.
      * @param <TRelayedPropertyValue> the type of the value of the relayed property.
      *
-     * @return a new {@link BidirectionalRelayBinding}.
+     * @return a new {@link ResettableBidirectionalRelayBinding}.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedBidirectional(
+    public static <TPropertyValue, TRelayedPropertyValue> ResettableBidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindBidirectional(
             @NotNull final ObservableValue<TPropertyValue> observedProperty,
             @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
             @NotNull final Property<TRelayedPropertyValue> targetProperty,
-            final boolean willResetTargetProperty) {
-        return new BidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty, willResetTargetProperty);
+            @Nullable final TRelayedPropertyValue resetValue) {
+        return new ResettableBidirectionalRelayBinding<>(observedProperty, relayProvider, targetProperty, resetValue);
     }
 
     /**
      * Creates a new {@link ConsumerRelayBinding} using the given information.
      *
+     * @param observedProperty              the {@link ObservableValue} that is observed for changes.
+     * @param relayProvider                 the {@link Function} to use when the relayed property the binding requires in needed.
+     * @param unbindRelayedPropertyConsumer the {@link Consumer} to be invoked when a new relayed property is unbound.
+     * @param bindRelayedPropertyConsumer   the {@link Consumer} to be invoked when a new relayed property is bound.
+     * @param <TPropertyValue>              the type of the value of the observed property.
+     * @param <TRelayedPropertyValue>       the type of the value of the relayed property.
+     *
+     * @return a new {@link BidirectionalRelayBinding}.
+     */
+    public static <TPropertyValue, TRelayedPropertyValue> ConsumerRelayBinding<TPropertyValue, TRelayedPropertyValue> consume(
+            @NotNull final ObservableValue<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Consumer<ObservableValue<TRelayedPropertyValue>> unbindRelayedPropertyConsumer,
+            @NotNull final Consumer<ObservableValue<TRelayedPropertyValue>> bindRelayedPropertyConsumer) {
+        return new ConsumerRelayBinding<>(observedProperty, relayProvider, unbindRelayedPropertyConsumer, bindRelayedPropertyConsumer);
+    }
+
+    // endregion
+
+    // region Deprecated Methods
+
+    /**
+     * Creates a new {@link CascadedRelayBinding} using the given information.
+     *
+     * @param property                the {@link Property} the binding will be observing for changes.
+     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
+     * @param <TPropertyValue>        the type of the value of the observed property.
+     * @param <TRelayedPropertyValue> the type of the value of the relayed property.
+     *
+     * @return a new {@link CascadedRelayBinding}.
+     *
+     * @deprecated will be removed in the next version use {@link #attach(ObservableValue, Function)} instead.
+     */
+    @Deprecated
+    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedCascaded(
+            @NotNull final ObservableValue<TPropertyValue> property, @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider) {
+        return attach(property, relayProvider);
+    }
+
+    /**
+     * Creates a new {@link UnidirectionalRelayBinding} using the given information.
+     *
+     * @param observedProperty        the {@link Property} that is observed for changes.
+     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
+     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
+     * @param <TPropertyValue>        the type of the value of the observed property.
+     * @param <TRelayedPropertyValue> the type of the value of the relayed property.
+     *
+     * @return a new {@link UnidirectionalRelayBinding}.
+     *
+     * @deprecated will be removed in the next version use {@link #bind(ObservableValue, Function, Property)} instead.
+     */
+    @Deprecated
+    public static <TPropertyValue, TRelayedPropertyValue> UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayed(
+            @NotNull final ObservableValue<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+        return bind(observedProperty, relayProvider, targetProperty);
+    }
+
+    /**
+     * Creates a new {@link ReverseUnidirectionalRelayBinding} using the given information.
+     *
+     * @param observedProperty        the {@link Property} that is observed for changes.
+     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
+     * @param targetProperty          the {@link ObservableValue} to bind the relayedProperty against.
+     * @param <TPropertyValue>        the type of the value of the observed property.
+     * @param <TRelayedPropertyValue> the type of the value of the relayed property.
+     *
+     * @return a new {@link ReverseUnidirectionalRelayBinding}.
+     *
+     * @deprecated will be removed in the next version use {@link #bindReverse(ObservableValue, Function, ObservableValue)} instead.
+     */
+    @Deprecated
+    public static <TPropertyValue, TRelayedPropertyValue> ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindReversedRelayed(
+            @NotNull final ObservableValue<TPropertyValue> observedProperty,
+            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+            @NotNull final ObservableValue<TRelayedPropertyValue> targetProperty) {
+        return bindReverse(observedProperty, relayProvider, targetProperty);
+    }
+
+    /**
+     * Creates a new {@link BidirectionalRelayBinding} that will not reset the target property when the relayed property is unbound.
+     *
      * @param observedProperty        the {@link ObservableValue} that is observed for changes.
      * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
-     * @param relayedPropertyConsumer the {@link Consumer} to be invoked when a new relayed property is know.
+     * @param targetProperty          the {@link Property} to bind the relayedProperty against.
      * @param <TPropertyValue>        the type of the value of the observed property.
      * @param <TRelayedPropertyValue> the type of the value of the relayed property.
      *
      * @return a new {@link BidirectionalRelayBinding}.
+     *
+     * @deprecated will be removed in the next version use {@link #bindBidirectional(ObservableValue, Function, Property)} instead.
      */
-    public static <TPropertyValue, TRelayedPropertyValue> ConsumerRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedConsumer(
+    @Deprecated
+    public static <TPropertyValue, TRelayedPropertyValue> BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedBidirectional(
             @NotNull final ObservableValue<TPropertyValue> observedProperty,
-            @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
-            @NotNull final Consumer<ObservableValue<TRelayedPropertyValue>> relayedPropertyConsumer) {
-        return new ConsumerRelayBinding<>(observedProperty, relayProvider, relayedPropertyConsumer);
+            @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+            @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+        return bindBidirectional(observedProperty, relayProvider, targetProperty);
     }
 
     // endregion

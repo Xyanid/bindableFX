@@ -21,51 +21,26 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 /**
- * This binding will allow for unidirectional binding between the {@link #targetProperty} and {@link ObservableValue} which is supplied by the {@link #relayProvider} for the
- * value of the {@link #observedProperty}. So the {@link #targetProperty} will have the same value as the relayed property.
+ * This binding will allow for unidirectional binding between the {@link #target} and {@link ObservableValue} which is supplied by the {@link #relayProvider} for the
+ * value of the {@link #observedProperty}. So the {@link #target} will have the same value as the relayed property.
  *
  * @author xyanid on 30.03.2016.
  */
 public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
         extends TargetBinding<TPropertyValue, ObservableValue<TRelayedPropertyValue>, Property<TRelayedPropertyValue>> {
 
-    // region Fields
-
-    /**
-     * Determines if the {@link #targetProperty} will be set to null when the binding is unbound.
-     */
-    private final boolean willResetTargetProperty;
-
-    // endregion
-
     // region Constructor
 
     UnidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
-                               @NotNull final Property<TRelayedPropertyValue> targetProperty,
-                               final boolean willResetTargetProperty) {
-        super(relayProvider, targetProperty);
-
-        this.willResetTargetProperty = willResetTargetProperty;
-    }
-
-    UnidirectionalRelayBinding(@NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
                                @NotNull final Property<TRelayedPropertyValue> targetProperty) {
-        this(relayProvider, targetProperty, false);
+        super(relayProvider, targetProperty);
     }
 
-    public UnidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
-                                      @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
-                                      @NotNull final Property<TRelayedPropertyValue> targetProperty,
-                                      final boolean willResetTargetProperty) {
-        super(observedProperty, relayProvider, targetProperty);
-
-        this.willResetTargetProperty = willResetTargetProperty;
-    }
 
     public UnidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
                                       @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider,
                                       @NotNull final Property<TRelayedPropertyValue> targetProperty) {
-        this(observedProperty, relayProvider, targetProperty, false);
+        super(observedProperty, relayProvider, targetProperty);
     }
 
     // endregion
@@ -73,23 +48,19 @@ public class UnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(@Nullable final ObservableValue<TRelayedPropertyValue> relayedProperty) {
-        Property<TRelayedPropertyValue> targetProperty = getTargetProperty();
+    protected void unbindProperty(@Nullable final ObservableValue<TRelayedPropertyValue> relayedObject) {
+        Property<TRelayedPropertyValue> targetProperty = getTarget();
         if (targetProperty != null) {
             targetProperty.unbind();
-            if (willResetTargetProperty) {
-                targetProperty.setValue(null);
-            }
         }
     }
 
-    @SuppressWarnings ("Duplicates")
     @Override
-    protected void bindProperty(@Nullable final ObservableValue<TRelayedPropertyValue> relayedProperty) {
-        if (relayedProperty != null) {
-            Property<TRelayedPropertyValue> targetProperty = getTargetProperty();
+    protected void bindProperty(@Nullable final ObservableValue<TRelayedPropertyValue> relayedObject) {
+        if (relayedObject != null) {
+            Property<TRelayedPropertyValue> targetProperty = getTarget();
             if (targetProperty != null) {
-                targetProperty.bind(relayedProperty);
+                targetProperty.bind(relayedObject);
             } else {
                 dispose();
             }

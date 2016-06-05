@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static de.saxsys.bindablefx.Bindings.bindRelayed;
+import static de.saxsys.bindablefx.Bindings.bind;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -220,25 +220,6 @@ public class UnidirectionalRelayBindingIntegrationTest {
     }
 
     /**
-     * When the relayed property is set to null and the binding is supposed to set the target property to null, the target property will be null.
-     */
-    @Test
-    public void whenTheBindingIsUnboundAndTheTargetPropertyShallBeResetTheTargetPropertyWillBeSetToNull() {
-
-        a.bProperty().setValue(new B());
-
-        cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x, true);
-
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        a.bProperty().setValue(null);
-
-        assertNull(x.getValue());
-    }
-
-    /**
      * When the relayed property is set to null and the binding is supposed to not set the target property to null, the target property will remain its old value.
      */
     @Test
@@ -266,7 +247,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
-        bindRelayed(a.bProperty(), B::xProperty, x);
+        bind(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(20L);
@@ -285,7 +266,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-        bindRelayed(a.bProperty(), B::xProperty, x);
+        bind(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(10L);
@@ -339,11 +320,11 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        assertNotNull(cut.getTargetProperty());
+        assertNotNull(cut.getTarget());
 
         cut.dispose();
 
-        assertNull(cut.getTargetProperty());
+        assertNull(cut.getTarget());
     }
 
     /**
@@ -378,7 +359,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
         a.bProperty().getValue().xProperty().setValue(2L);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetProperty());
+        assertNotNull(cut.getTarget());
 
         x = null;
 
@@ -387,7 +368,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
         a.bProperty().setValue(new B());
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
-        assertNull(cut.getTargetProperty());
+        assertNull(cut.getTarget());
     }
 
     /**
@@ -403,7 +384,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetProperty());
+        assertNotNull(cut.getTarget());
 
         a = null;
 
@@ -416,7 +397,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
         //assertNull(TestUtil.getObservedProperty(cut));
-        //assertNull(cut.getTargetProperty());
+        //assertNull(cut.getTarget());
     }
 
     // endregion

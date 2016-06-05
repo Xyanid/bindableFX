@@ -90,9 +90,9 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * {@link #bind(Function, Property, Object)}, {@link #bindReverse(Function, ObservableValue)}, {@link #bindBidirectional(Function, Property)} or
      * {@link #bindBidirectional(Function, Property, Object)} because the {@link #child} will be disposed of before a new one is created.
      *
-     * @param <TRelayedPropertyValueCascaded> the type of the value of the relayed property of the new {@link CascadedRelayBinding}.
-     * @param relayProvider                   the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
-     *                                        {@link CascadedRelayBinding}.
+     * @param <TRelayedObservableCascaded> the type of the value of the relayed property of the new {@link CascadedRelayBinding}.
+     * @param relayProvider                the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
+     *                                     {@link CascadedRelayBinding}.
      *
      * @return a new {@link CascadedRelayBinding} which is used for the {@link #child}.
      *
@@ -104,8 +104,8 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * @see #bindBidirectional(Function, Property)
      * @see #bindBidirectional(Function, Property, Object)
      */
-    public <TRelayedPropertyValueCascaded> CascadedRelayBinding<TRelayedValue, TRelayedPropertyValueCascaded> attach(
-            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedPropertyValueCascaded>> relayProvider) {
+    public <TRelayedObservableCascaded> CascadedRelayBinding<TRelayedValue, TRelayedObservableCascaded> attach(
+            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedObservableCascaded>> relayProvider) {
         return createChild(() -> new CascadedRelayBinding<>(relayProvider));
     }
 
@@ -117,11 +117,11 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * {@link #bindReverse(Function, ObservableValue)}, {@link #bindBidirectional(Function, Property)} or {@link #bindBidirectional(Function, Property, Object)}
      * because the {@link #child} will be disposed of before a new one is created.
      *
-     * @param <TRelayedPropertyValueCascaded> the type of the value of the relayed property of the new {@link ConsumerRelayBinding}.
-     * @param relayProvider                   the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
-     *                                        {@link ConsumerRelayBinding}.
-     * @param unbindRelayedPropertyConsumer   the {@link Consumer} to be used as the {@link ConsumerRelayBinding#unbindRelayedPropertyConsumer}.
-     * @param bindRelayedPropertyConsumer     the {@link Consumer} to be used as the {@link ConsumerRelayBinding#bindRelayedPropertyConsumer}.
+     * @param <TRelayedObjectCascaded>      the type of the value of the relayed property of the new {@link ConsumerRelayBinding}.
+     * @param relayProvider                 the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
+     *                                      {@link ConsumerRelayBinding}.
+     * @param unbindRelayedPropertyConsumer the {@link Consumer} to be used as the {@link ConsumerRelayBinding#unbindRelayedObjectConsumer}.
+     * @param bindRelayedPropertyConsumer   the {@link Consumer} to be used as the {@link ConsumerRelayBinding#bindRelayedObjectConsumer}.
      *
      * @return a new {@link ConsumerRelayBinding} which is used for the {@link #child}.
      *
@@ -133,10 +133,10 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * @see #bindBidirectional(Function, Property)
      * @see #bindBidirectional(Function, Property, Object)
      */
-    public <TRelayedPropertyValueCascaded> ConsumerRelayBinding<TRelayedValue, TRelayedPropertyValueCascaded> consume(
-            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedPropertyValueCascaded>> relayProvider,
-            @NotNull final Consumer<ObservableValue<TRelayedPropertyValueCascaded>> unbindRelayedPropertyConsumer,
-            @NotNull final Consumer<ObservableValue<TRelayedPropertyValueCascaded>> bindRelayedPropertyConsumer) {
+    public <TRelayedObjectCascaded> ConsumerRelayBinding<TRelayedValue, TRelayedObjectCascaded> consume(
+            @NotNull final Function<TRelayedValue, TRelayedObjectCascaded> relayProvider,
+            @NotNull final Consumer<TRelayedObjectCascaded> unbindRelayedPropertyConsumer,
+            @NotNull final Consumer<TRelayedObjectCascaded> bindRelayedPropertyConsumer) {
         return createChild(() -> new ConsumerRelayBinding<>(relayProvider, unbindRelayedPropertyConsumer, bindRelayedPropertyConsumer));
     }
 
@@ -148,10 +148,10 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * {@link #bind(Function, Property, Object)}, {@link #bindReverse(Function, ObservableValue)}, {@link #bindBidirectional(Function, Property)} or
      * {@link #bindBidirectional(Function, Property, Object)} because the {@link #child} will be disposed of before a new one is created.
      *
-     * @param <TRelayedPropertyValueCascaded> the type of the value of the relayed property of the new {@link UnidirectionalRelayBinding}.
-     * @param relayProvider                   the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
-     *                                        {@link UnidirectionalRelayBinding}.
-     * @param targetProperty                  the target property to be used for the new {@link UnidirectionalRelayBinding}.
+     * @param <TRelayedObservableValueCascaded> the type of the value of the relayed property of the new {@link UnidirectionalRelayBinding}.
+     * @param relayProvider                     the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
+     *                                          {@link UnidirectionalRelayBinding}.
+     * @param targetProperty                    the target property to be used for the new {@link UnidirectionalRelayBinding}.
      *
      * @return a new {@link UnidirectionalRelayBinding} which is used for the {@link #child}.
      *
@@ -163,9 +163,9 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * @see #bindBidirectional(Function, Property)
      * @see #bindBidirectional(Function, Property, Object)
      */
-    public <TRelayedPropertyValueCascaded> UnidirectionalRelayBinding<TRelayedValue, TRelayedPropertyValueCascaded> bind(
-            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedPropertyValueCascaded>> relayProvider,
-            @NotNull final Property<TRelayedPropertyValueCascaded> targetProperty) {
+    public <TRelayedObservableValueCascaded> UnidirectionalRelayBinding<TRelayedValue, TRelayedObservableValueCascaded> bind(
+            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedObservableValueCascaded>> relayProvider,
+            @NotNull final Property<TRelayedObservableValueCascaded> targetProperty) {
         return createChild(() -> new UnidirectionalRelayBinding<>(relayProvider, targetProperty));
     }
 
@@ -177,11 +177,11 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * {@link #bindReverse(Function, ObservableValue)}, {@link #bindBidirectional(Function, Property)} or {@link #bindBidirectional(Function, Property, Object)} because the
      * {@link #child} will be disposed of before a new one is created.
      *
-     * @param <TRelayedPropertyValueCascaded> the type of the value of the relayed property of the new {@link UnidirectionalRelayBinding}.
-     * @param relayProvider                   the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
-     *                                        {@link UnidirectionalRelayBinding}.
-     * @param targetProperty                  the target property to be used for the new {@link UnidirectionalRelayBinding}.
-     * @param resetValue                      value to use when the target property gets unbound.
+     * @param <TRelayedObservableValueCascaded> the type of the value of the relayed property of the new {@link UnidirectionalRelayBinding}.
+     * @param relayProvider                     the {@link Function} used to retrieve the relayed property of the current value of the observed property of the new
+     *                                          {@link UnidirectionalRelayBinding}.
+     * @param targetProperty                    the target property to be used for the new {@link UnidirectionalRelayBinding}.
+     * @param resetValue                        value to use when the target property gets unbound.
      *
      * @return a new {@link ResettableUnidirectionalRelayBinding} which is used for the {@link #child}.
      *
@@ -193,10 +193,10 @@ public class CascadedRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * @see #bindBidirectional(Function, Property)
      * @see #bindBidirectional(Function, Property, Object)
      */
-    public <TRelayedPropertyValueCascaded> ResettableUnidirectionalRelayBinding<TRelayedValue, TRelayedPropertyValueCascaded> bind(
-            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedPropertyValueCascaded>> relayProvider,
-            @NotNull final Property<TRelayedPropertyValueCascaded> targetProperty,
-            @Nullable final TRelayedPropertyValueCascaded resetValue) {
+    public <TRelayedObservableValueCascaded> ResettableUnidirectionalRelayBinding<TRelayedValue, TRelayedObservableValueCascaded> bind(
+            @NotNull final Function<TRelayedValue, ObservableValue<TRelayedObservableValueCascaded>> relayProvider,
+            @NotNull final Property<TRelayedObservableValueCascaded> targetProperty,
+            @Nullable final TRelayedObservableValueCascaded resetValue) {
         return createChild(() -> new ResettableUnidirectionalRelayBinding<>(relayProvider, targetProperty, resetValue));
     }
 

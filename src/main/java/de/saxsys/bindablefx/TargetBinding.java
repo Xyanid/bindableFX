@@ -27,7 +27,7 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTarget> extends RelayBinding<TPropertyValue, TRelayedProperty> {
+public abstract class TargetBinding<TPropertyValue, TRelayedObject, TTarget> extends RelayBinding<TPropertyValue, TRelayedObject> {
 
     // region Fields
 
@@ -41,14 +41,13 @@ public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTarget> e
 
     // region Constructor
 
-    protected TargetBinding(@NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider, @NotNull final TTarget target) {
+    protected TargetBinding(@NotNull final Function<TPropertyValue, TRelayedObject> relayProvider, @NotNull final TTarget target) {
         super(relayProvider);
 
         this.target = new WeakReference<>(target);
     }
 
-    protected TargetBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
-                            @NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider,
+    protected TargetBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty, @NotNull final Function<TPropertyValue, TRelayedObject> relayProvider,
                             @NotNull final TTarget target) {
         this(relayProvider, target);
 

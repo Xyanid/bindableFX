@@ -21,12 +21,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * This binding will allow for the {@link #bindRelayedPropertyConsumer} to be invoked whenever a new relayed property was set and {@link #unbindRelayedPropertyConsumer} when for
+ * This binding will allow for the {@link #bindRelayedObjectConsumer} to be invoked whenever a new relayed property was set and {@link #unbindRelayedObjectConsumer} when for
  * the old relayed property.
  *
  * @author xyanid on 30.03.2016.
  */
-public class ConsumerRelayBinding<TPropertyValue, TRelayedValue> extends RelayBinding<TPropertyValue, ObservableValue<TRelayedValue>> {
+public class ConsumerRelayBinding<TPropertyValue, TRelayedObject> extends RelayBinding<TPropertyValue, TRelayedObject> {
 
 
     //region Fields
@@ -35,32 +35,31 @@ public class ConsumerRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
      * The {@link Consumer} to be called when the {@link #observedProperty} is changed and the {@link #relayProvider} needs to bind the new relayed property.
      */
     @NotNull
-    private final Consumer<ObservableValue<TRelayedValue>> bindRelayedPropertyConsumer;
-
+    private final Consumer<TRelayedObject> bindRelayedObjectConsumer;
     /**
      * The {@link Consumer} to be called when the {@link #observedProperty} is changed and the {@link #relayProvider} needs to unbound the old relayed property.
      */
     @NotNull
-    private final Consumer<ObservableValue<TRelayedValue>> unbindRelayedPropertyConsumer;
+    private final Consumer<TRelayedObject> unbindRelayedObjectConsumer;
 
     // endregion
 
     // region Constructor
 
-    ConsumerRelayBinding(@NotNull final Function<TPropertyValue, ObservableValue<TRelayedValue>> relayProvider,
-                         @NotNull final Consumer<ObservableValue<TRelayedValue>> unbindRelayedPropertyConsumer,
-                         @NotNull final Consumer<ObservableValue<TRelayedValue>> bindRelayedPropertyConsumer) {
+    ConsumerRelayBinding(@NotNull final Function<TPropertyValue, TRelayedObject> relayProvider,
+                         @NotNull final Consumer<TRelayedObject> unbindRelayedObjectConsumer,
+                         @NotNull final Consumer<TRelayedObject> bindRelayedObjectConsumer) {
         super(relayProvider);
 
-        this.unbindRelayedPropertyConsumer = unbindRelayedPropertyConsumer;
-        this.bindRelayedPropertyConsumer = bindRelayedPropertyConsumer;
+        this.unbindRelayedObjectConsumer = unbindRelayedObjectConsumer;
+        this.bindRelayedObjectConsumer = bindRelayedObjectConsumer;
     }
 
     public ConsumerRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
-                                @NotNull final Function<TPropertyValue, ObservableValue<TRelayedValue>> relayProvider,
-                                @NotNull final Consumer<ObservableValue<TRelayedValue>> unbindRelayedPropertyConsumer,
-                                @NotNull final Consumer<ObservableValue<TRelayedValue>> bindRelayedPropertyConsumer) {
-        this(relayProvider, unbindRelayedPropertyConsumer, bindRelayedPropertyConsumer);
+                                @NotNull final Function<TPropertyValue, TRelayedObject> relayProvider,
+                                @NotNull final Consumer<TRelayedObject> unbindRelayedObjectConsumer,
+                                @NotNull final Consumer<TRelayedObject> bindRelayedObjectConsumer) {
+        this(relayProvider, unbindRelayedObjectConsumer, bindRelayedObjectConsumer);
 
         createObservedProperty(observedProperty);
     }
@@ -70,13 +69,13 @@ public class ConsumerRelayBinding<TPropertyValue, TRelayedValue> extends RelayBi
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(@Nullable final ObservableValue<TRelayedValue> relayedObject) {
-        unbindRelayedPropertyConsumer.accept(relayedObject);
+    protected void unbindProperty(@Nullable final TRelayedObject relayedObject) {
+        unbindRelayedObjectConsumer.accept(relayedObject);
     }
 
     @Override
-    protected void bindProperty(@Nullable final ObservableValue<TRelayedValue> relayedObject) {
-        bindRelayedPropertyConsumer.accept(relayedObject);
+    protected void bindProperty(@Nullable final TRelayedObject relayedObject) {
+        bindRelayedObjectConsumer.accept(relayedObject);
     }
 
     // endregion

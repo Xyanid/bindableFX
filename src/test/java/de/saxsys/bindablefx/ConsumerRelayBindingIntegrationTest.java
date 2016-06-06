@@ -29,8 +29,6 @@ import static de.saxsys.bindablefx.Bindings.consume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -47,9 +45,9 @@ public class ConsumerRelayBindingIntegrationTest {
 
     private Consumer<Property<Long>> bindConsumer;
 
-    private ObjectProperty<Long> x;
+    private ObjectProperty<Long> x = new SimpleObjectProperty<>();
 
-    private ConsumerRelayBinding<B, Long> cut;
+    private ConsumerRelayBinding<B, Property<Long>> cut;
 
     // endregion
 
@@ -58,6 +56,7 @@ public class ConsumerRelayBindingIntegrationTest {
     @Before
     public void setUp() {
         a = new A();
+        x = new SimpleObjectProperty<>();
         unbindConsumer = data -> x.unbind();
         bindConsumer = data -> x.bind(data);
     }
@@ -234,7 +233,7 @@ public class ConsumerRelayBindingIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        cut = new ConsumerRelayBinding<>(a.bProperty(), b -> b.xProperty(), unbindConsumer, bindConsumer);
+        cut = new ConsumerRelayBinding<>(a.bProperty(), B::xProperty, unbindConsumer, bindConsumer);
 
         a.bProperty().getValue().xProperty().setValue(2L);
 
@@ -280,13 +279,12 @@ public class ConsumerRelayBindingIntegrationTest {
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
-        x = null;
+        x = new SimpleObjectProperty<>();
 
         System.gc();
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(10L);
-        x = new SimpleObjectProperty<>();
         x.setValue(20L);
 
         assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
@@ -318,23 +316,6 @@ public class ConsumerRelayBindingIntegrationTest {
     }
 
     /**
-     * When the binding is disposed, the reference to the target property is cleared.
-     */
-    @Test
-    public void disposingTheBindingClearTheReferenceToTheTargetProperty() {
-
-        cut = new ConsumerRelayBinding<>(a.bProperty(), B::xProperty, unbindConsumer, bindConsumer);
-
-        a.bProperty().setValue(new B());
-
-        assertNotNull(cut.getTarget());
-
-        cut.dispose();
-
-        assertNull(cut.getTarget());
-    }
-
-    /**
      * When the binding is disposed, changes made to the relayed property will not affect the target property.
      */
     @Test
@@ -355,30 +336,6 @@ public class ConsumerRelayBindingIntegrationTest {
     }
 
     /**
-     * When the target property is garbage collected, the binding will be disposed when a change event on the observed property occurs
-     */
-    @Test
-    public void garbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-
-        cut = new ConsumerRelayBinding<>(a.bProperty(), B::xProperty, unbindConsumer, bindConsumer);
-
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTarget());
-
-        x = null;
-
-        System.gc();
-
-        a.bProperty().setValue(new B());
-
-        assertFalse(cut.getCurrentObservedValue().isPresent());
-        assertNull(cut.getTarget());
-    }
-
-    /**
      * When the observed property is garbage collected, the binding will be disposed when the target property is changed.
      */
     @Test
@@ -391,7 +348,6 @@ public class ConsumerRelayBindingIntegrationTest {
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTarget());
 
         a = null;
 

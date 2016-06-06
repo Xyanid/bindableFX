@@ -267,29 +267,6 @@ public class ConsumerRelayBindingIntegrationTest {
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
-    /**
-     * Creating a binding without a strong reference and garbage collecting the desired
-     */
-    @Test
-    public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-        consume(a.bProperty(), B::xProperty, unbindConsumer, bindConsumer);
-
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(10L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        x = new SimpleObjectProperty<>();
-
-        System.gc();
-
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(10L);
-        x.setValue(20L);
-
-        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
     // endregion
 
     // region Disposing

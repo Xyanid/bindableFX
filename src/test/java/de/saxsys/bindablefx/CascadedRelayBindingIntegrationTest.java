@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static de.saxsys.bindablefx.Bindings.bindRelayedCascaded;
+import static de.saxsys.bindablefx.Bindings.attach;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -375,7 +375,7 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void creatingABindingWithOutAStrongReferenceWillAllowToBindTheRelayedPropertyWhenTheObservedPropertiesAreChanged() {
 
-        bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
+        attach(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());
@@ -397,7 +397,7 @@ public class CascadedRelayBindingIntegrationTest {
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheFirstObservedPropertyWillDisposeTheEntireCascadedChain() {
 
-        bindRelayedCascaded(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
+        attach(a.bProperty(), B::cProperty).attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());

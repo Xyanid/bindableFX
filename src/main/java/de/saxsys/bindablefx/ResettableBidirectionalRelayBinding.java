@@ -22,24 +22,40 @@ import java.util.function.Function;
 
 /**
  * This binding will allow for bidirectional binding between the {@link Property} which is supplied by the {@link #relayProvider} for the value of the
- * {@link #observedProperty} and the {@link #target}.
+ * {@link #observedProperty} and the {@link #target} and will have its value set to the {@link #resetValue} when
+ * its unbound.
  *
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
-        extends TargetBinding<TPropertyValue, Property<TRelayedPropertyValue>, Property<TRelayedPropertyValue>> {
+public class ResettableBidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> extends BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue> {
+
+    // region Fields
+
+    /**
+     * This value wil be used when the relayed property is unbound.
+     */
+    @Nullable
+    private final TRelayedPropertyValue resetValue;
+
+    // endregion
 
     // region Constructor
 
-    BidirectionalRelayBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
-                              @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+    ResettableBidirectionalRelayBinding(@NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+                                        @NotNull final Property<TRelayedPropertyValue> targetProperty,
+                                        @Nullable final TRelayedPropertyValue resetValue) {
         super(relayProvider, targetProperty);
+
+        this.resetValue = resetValue;
     }
 
-    public BidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
-                                     @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
-                                     @NotNull final Property<TRelayedPropertyValue> targetProperty) {
+    public ResettableBidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
+                                               @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
+                                               @NotNull final Property<TRelayedPropertyValue> targetProperty,
+                                               @Nullable final TRelayedPropertyValue resetValue) {
         super(observedProperty, relayProvider, targetProperty);
+
+        this.resetValue = resetValue;
     }
 
     // endregion
@@ -52,18 +68,7 @@ public class BidirectionalRelayBinding<TPropertyValue, TRelayedPropertyValue>
             Property<TRelayedPropertyValue> targetProperty = getTarget();
             if (targetProperty != null) {
                 targetProperty.unbindBidirectional(relayedObject);
-            }
-        }
-    }
-
-    @Override
-    protected void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedObject) {
-        if (relayedObject != null) {
-            Property<TRelayedPropertyValue> targetProperty = getTarget();
-            if (targetProperty != null) {
-                targetProperty.bindBidirectional(relayedObject);
-            } else {
-                dispose();
+                targetProperty.setValue(resetValue);
             }
         }
     }

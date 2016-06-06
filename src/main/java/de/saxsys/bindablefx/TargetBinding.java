@@ -22,35 +22,34 @@ import java.lang.ref.WeakReference;
 import java.util.function.Function;
 
 /**
- * This represents a final binding, which should bind the {@link ObjectProperty} provided by the {@link #relayProvider} to the given {@link #targetProperty}.
+ * This represents a final binding, which should bind the {@link ObjectProperty} provided by the {@link #relayProvider} to the given {@link #target}.
  * Binding and unbinding of the {@link #observedProperty} should happen when ever
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTargetProperty> extends RelayBinding<TPropertyValue, TRelayedProperty> {
+public abstract class TargetBinding<TPropertyValue, TRelayedObject, TTarget> extends RelayBinding<TPropertyValue, TRelayedObject> {
 
     // region Fields
 
     /**
-     * This is the target property that will be bound to the relayed {@link ObjectProperty} which is provided by applying the value of the
+     * This is the target that will be used for the relayed {@link ObjectProperty} which is provided by applying the value of the
      * {@link #observedProperty} to the {@link #relayProvider}.
      */
-    private final WeakReference<TTargetProperty> targetProperty;
+    private final WeakReference<TTarget> target;
 
     // endregion
 
     // region Constructor
 
-    protected TargetBinding(@NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider, @NotNull final TTargetProperty targetProperty) {
+    protected TargetBinding(@NotNull final Function<TPropertyValue, TRelayedObject> relayProvider, @NotNull final TTarget target) {
         super(relayProvider);
 
-        this.targetProperty = new WeakReference<>(targetProperty);
+        this.target = new WeakReference<>(target);
     }
 
-    protected TargetBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
-                            @NotNull final Function<TPropertyValue, TRelayedProperty> relayProvider,
-                            @NotNull final TTargetProperty targetProperty) {
-        this(relayProvider, targetProperty);
+    protected TargetBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty, @NotNull final Function<TPropertyValue, TRelayedObject> relayProvider,
+                            @NotNull final TTarget target) {
+        this(relayProvider, target);
 
         createObservedProperty(observedProperty);
     }
@@ -60,13 +59,26 @@ public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTargetPro
     // region Getter
 
     /**
-     * Returns the {@link #targetProperty}.
+     * Returns the {@link #target}.
      *
-     * @return the {@link #targetProperty}.
+     * @return the {@link #target}.
+     *
+     * @deprecated will be removed in the next release use {@link #getTarget()} instead.
      */
     @Nullable
-    protected final TTargetProperty getTargetPropertyProperty() {
-        return targetProperty.get();
+    @Deprecated
+    protected final TTarget getTargetPropertyProperty() {
+        return getTarget();
+    }
+
+    /**
+     * Returns the {@link #target}.
+     *
+     * @return the {@link #target}.
+     */
+    @Nullable
+    protected final TTarget getTarget() {
+        return target.get();
     }
 
     // endregion
@@ -77,7 +89,7 @@ public abstract class TargetBinding<TPropertyValue, TRelayedProperty, TTargetPro
     public void dispose() {
         super.dispose();
 
-        targetProperty.clear();
+        target.clear();
     }
 
     // endregion

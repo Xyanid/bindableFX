@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static de.saxsys.bindablefx.Bindings.bindRelayedBidirectional;
+import static de.saxsys.bindablefx.Bindings.bindBidirectional;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -205,6 +205,25 @@ public class BidirectionalRelayBindingIntegrationTest {
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
+    /**
+     * When the relayed property is set to null and the binding is supposed to not set the target property to null, the target property will remain its old value.
+     */
+    @Test
+    public void whenTheBindingIsUnboundAndTheTargetPropertyShallNotBeResetTheTargetPropertyRemainItsOldValue() {
+
+        a.bProperty().setValue(new B());
+
+        cut = new BidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+
+        a.bProperty().getValue().xProperty().setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
+        a.bProperty().setValue(null);
+
+        assertEquals(2L, x.getValue().longValue());
+    }
+
     //endregion
 
     // region No Strong Reference
@@ -217,7 +236,7 @@ public class BidirectionalRelayBindingIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        bindRelayedBidirectional(a.bProperty(), B::xProperty, x);
+        bindBidirectional(a.bProperty(), B::xProperty, x);
 
         x.setValue(2L);
 
@@ -246,7 +265,7 @@ public class BidirectionalRelayBindingIntegrationTest {
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
 
-        bindRelayedBidirectional(a.bProperty(), B::xProperty, x);
+        bindBidirectional(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         x.setValue(20L);
@@ -299,11 +318,11 @@ public class BidirectionalRelayBindingIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTarget());
 
         cut.dispose();
 
-        assertNull(cut.getTargetPropertyProperty());
+        assertNull(cut.getTarget());
     }
 
     /**
@@ -358,7 +377,7 @@ public class BidirectionalRelayBindingIntegrationTest {
         x.setValue(2L);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTarget());
 
         x = null;
 
@@ -367,7 +386,7 @@ public class BidirectionalRelayBindingIntegrationTest {
         a.bProperty().setValue(new B());
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
-        assertNull(cut.getTargetPropertyProperty());
+        assertNull(cut.getTarget());
     }
 
     /**
@@ -383,7 +402,7 @@ public class BidirectionalRelayBindingIntegrationTest {
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTarget());
 
         a = null;
 
@@ -396,7 +415,7 @@ public class BidirectionalRelayBindingIntegrationTest {
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
         //assertNull(TestUtil.getObservedProperty(cut));
-        //assertNull(cut.getTargetPropertyProperty());
+        //assertNull(cut.getTarget());
     }
 
     // endregion

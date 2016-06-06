@@ -13,7 +13,6 @@
 
 package de.saxsys.bindablefx;
 
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 /**
- * This binding will allow for unidirectional binding between the {@link ObjectProperty} which is supplied by the {@link #relayProvider} for the value of the
- * {@link #observedProperty} and the {@link #targetProperty}. So the relayed property will have the same value as the {@link #targetProperty}.
+ * This binding will allow for unidirectional binding between the {@link Property} which is supplied by the {@link #relayProvider} for the value of the
+ * {@link #observedProperty} and the {@link #target}. So the relayed property will have the same value as the {@link #target}.
  *
  * @author xyanid on 30.03.2016.
  */
@@ -40,7 +39,7 @@ public class ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyV
 
     public ReverseUnidirectionalRelayBinding(@NotNull final ObservableValue<TPropertyValue> observedProperty,
                                              @NotNull final Function<TPropertyValue, Property<TRelayedPropertyValue>> relayProvider,
-                                             final @NotNull ObservableValue<TRelayedPropertyValue> targetProperty) {
+                                             @NotNull final ObservableValue<TRelayedPropertyValue> targetProperty) {
         super(observedProperty, relayProvider, targetProperty);
     }
 
@@ -49,19 +48,18 @@ public class ReverseUnidirectionalRelayBinding<TPropertyValue, TRelayedPropertyV
     // region Override RelayBinding
 
     @Override
-    protected void unbindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
-        if (relayedProperty != null) {
-            relayedProperty.unbind();
+    protected void unbindProperty(@Nullable final Property<TRelayedPropertyValue> relayedObject) {
+        if (relayedObject != null) {
+            relayedObject.unbind();
         }
     }
 
-    @SuppressWarnings ("Duplicates")
     @Override
-    protected void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedProperty) {
-        if (relayedProperty != null) {
-            ObservableValue<TRelayedPropertyValue> targetProperty = getTargetPropertyProperty();
+    protected void bindProperty(@Nullable final Property<TRelayedPropertyValue> relayedObject) {
+        if (relayedObject != null) {
+            ObservableValue<TRelayedPropertyValue> targetProperty = getTarget();
             if (targetProperty != null) {
-                relayedProperty.bind(targetProperty);
+                relayedObject.bind(targetProperty);
             } else {
                 dispose();
             }

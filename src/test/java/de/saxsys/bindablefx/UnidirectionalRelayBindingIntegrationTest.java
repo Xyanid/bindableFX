@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static de.saxsys.bindablefx.Bindings.bindRelayed;
+import static de.saxsys.bindablefx.Bindings.bind;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author xyanid on 31.03.2016.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith (MockitoJUnitRunner.class)
 public class UnidirectionalRelayBindingIntegrationTest {
 
     // region Fields
@@ -219,6 +219,25 @@ public class UnidirectionalRelayBindingIntegrationTest {
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
+    /**
+     * When the relayed property is set to null and the binding is supposed to not set the target property to null, the target property will remain its old value.
+     */
+    @Test
+    public void whenTheBindingIsUnboundAndTheTargetPropertyShallNotBeResetTheTargetPropertyRemainItsOldValue() {
+
+        a.bProperty().setValue(new B());
+
+        cut = new UnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+
+        a.bProperty().getValue().xProperty().setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
+        a.bProperty().setValue(null);
+
+        assertEquals(2L, x.getValue().longValue());
+    }
+
     //endregion
 
     // region No Strong Reference
@@ -228,7 +247,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
-        bindRelayed(a.bProperty(), B::xProperty, x);
+        bind(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(20L);
@@ -247,7 +266,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-        bindRelayed(a.bProperty(), B::xProperty, x);
+        bind(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(10L);
@@ -301,11 +320,11 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTarget());
 
         cut.dispose();
 
-        assertNull(cut.getTargetPropertyProperty());
+        assertNull(cut.getTarget());
     }
 
     /**
@@ -340,7 +359,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
         a.bProperty().getValue().xProperty().setValue(2L);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTarget());
 
         x = null;
 
@@ -349,7 +368,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
         a.bProperty().setValue(new B());
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
-        assertNull(cut.getTargetPropertyProperty());
+        assertNull(cut.getTarget());
     }
 
     /**
@@ -365,7 +384,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTargetPropertyProperty());
+        assertNotNull(cut.getTarget());
 
         a = null;
 
@@ -378,7 +397,7 @@ public class UnidirectionalRelayBindingIntegrationTest {
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
         //assertNull(TestUtil.getObservedProperty(cut));
-        //assertNull(cut.getTargetPropertyProperty());
+        //assertNull(cut.getTarget());
     }
 
     // endregion

@@ -20,7 +20,7 @@
 
     <groupId>de.saxsys</groupId>
     <artifactId>bindablefx</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <name>bindableFX</name>
     <description>Adds additional functionality to javaFX binding mechanism.</description>
@@ -83,6 +83,7 @@
             <version>2.0.31-beta</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <distributionManagement>

@@ -20,84 +20,48 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 /**
- * This class will act as a relay binding, meaning when the {@link #observedProperty} is changed the {@link #relayProvider} will be invoked, so that the
+ * This class will act as a relay binding, meaning when the {@link #observedValue} is changed the {@link #relayProvider} will be invoked, so that the
  * next desired relayed object will be known.
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class RelayBinding<TPropertyValue, TRelayedObject> extends BaseBinding<TPropertyValue> {
+public abstract class RelayBinding<TValue, TComputedValue> extends BaseBinding<ObservableValue<TValue>, ObservableValue<TComputedValue>> {
 
-    // region Fields
+    //region Fields
 
     /**
-     * This {@link Function} is called when the underlying {@link #observedProperty} has changed and we need a new property which we can then use.
+     * This function will be called when the {@link #observedValue} has changed.
      */
-    private final Function<TPropertyValue, TRelayedObject> relayProvider;
+    @Nullable
+    private Function<TValue, ObservableValue<TComputedValue>> relayProvider;
 
-    // endregion
+    //endregion
 
     // region Constructor
 
-    protected RelayBinding(@NotNull final Function<TPropertyValue, TRelayedObject> relayProvider) {
-        super();
+    protected RelayBinding() {super();}
 
+    // endregion
+
+    // region Setter
+
+    final void setRelayProvider(@NotNull final Function<TValue, ObservableValue<TComputedValue>> relayProvider) {
         this.relayProvider = relayProvider;
     }
 
     // endregion
 
-    // region Getter
+    // region Override
 
-    /**
-     * Returns the {@link #relayProvider}.
-     *
-     * @return the {@link #relayProvider}.
-     */
-    protected final Function<TPropertyValue, TRelayedObject> getRelayProvider() {
-        return relayProvider;
-    }
-
-    // endregion
-
-    // region Abstract
-
-    /**
-     * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the old value, so the old
-     * relayed object can be unbound. This will only happen if the old value is not null.
-     *
-     * @param relayedObject the relayed object which was previously bound.
-     */
-    protected abstract void unbindProperty(@Nullable final TRelayedObject relayedObject);
-
-    /**
-     * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the new value, so the new
-     * relayed object can be bound. This will only happen if the new value is not null.
-     *
-     * @param relayedObject the relayed object which was set and needs to be bound now.
-     */
-    protected abstract void bindProperty(@Nullable final TRelayedObject relayedObject);
-
-    // endregion
-
-    // region Override BaseBinding
-
-    /**
-     * When the property was set to something valid, we will use the provided {@link #relayProvider} to get another property which we will listen to
-     *
-     * @param observable the observable value to use
-     * @param oldValue   the old value.
-     * @param newValue   the new value.
-     */
     @Override
-    public final void changed(@Nullable final ObservableValue<? extends TPropertyValue> observable,
-                              @Nullable final TPropertyValue oldValue,
-                              @Nullable final TPropertyValue newValue) {
-        if (oldValue != null) {
-            unbindProperty(relayProvider.apply(oldValue));
+    public final ObservableValue<TComputedValue> computeValue() {
+        final ObservableValue<TValue> currentValue = getCurrentObservableValue().orElse(null);
+
+        if (relayProvider != null && currentValue != null && currentValue.getValue() != null) {
+            return relayProvider.apply(currentValue.getValue());
         }
-        if (newValue != null) {
-            bindProperty(relayProvider.apply(newValue));
-        }
+
+        return null;
     }
 
     // endregion

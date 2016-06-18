@@ -13,9 +13,7 @@
 
 package de.saxsys.bindablefx;
 
-import javafx.beans.WeakListener;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.value.ChangeListener;
+import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,99 +22,82 @@ import java.lang.ref.WeakReference;
 import java.util.Optional;
 
 /**
- * This class represents the basic binding class, it simply hold the {@link ObjectProperty} and a {@link ChangeListener}, which will be invoked each time the
- * observedProperty is changed. Every time the {@link #observedProperty} is changed the class extending from this class will be informed and can react to the
- * new state of the observedProperty according to its own needs.
+ * This is the baseBinding which will be used
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class BaseBinding<TPropertyValue> implements ChangeListener<TPropertyValue>, WeakListener {
+public abstract class BaseBinding<TObservedValue extends ObservableValue, TComputedValue> extends ObjectBinding<TComputedValue> {
 
-    //region Fields
+    // region Fields
 
     /**
      * Determines the {@link ObservableValue} which is watched by this binding.
      */
     @Nullable
-    private WeakReference<ObservableValue<TPropertyValue>> observedProperty;
-
-    //endregion
-
-    // region Getter
-
-    /**
-     * Returns the current value of the {@link #observedProperty}.
-     *
-     * @return {@link Optional#empty()} if the {@link #observedProperty} is null or an {@link Optional} of the current value of the {@link #observedProperty}.
-     */
-    public Optional<TPropertyValue> getCurrentObservedValue() {
-        if (observedProperty == null) {
-            return Optional.empty();
-        }
-
-        ObservableValue<TPropertyValue> property = observedProperty.get();
-        if (property != null) {
-            return Optional.ofNullable(property.getValue());
-        } else {
-            return Optional.empty();
-        }
-    }
+    private WeakReference<TObservedValue> observedValue;
 
     // endregion
 
-    // region Package Private
+    // region Constructor
+
+    protected BaseBinding() {}
+
+    // endregion
+
+    // region ObservedValue
 
     /**
-     * Removes this binding as the listener from the {@link #observedProperty}, invokes a call to {@link #changed(ObservableValue, Object, Object)} with the oldValue and then
-     * sets the {@link #observedProperty} to null.
+     * Returns the current value of the {@link #observedValue}.
+     *
+     * @return {@link Optional#empty()} if the {@link #observedValue} is null or an {@link Optional} of the current value of the {@link #observedValue}.
      */
-    void destroyObservedProperty() {
-        if (observedProperty != null) {
-            ObservableValue<TPropertyValue> property = observedProperty.get();
-            if (property != null) {
-                property.removeListener(this);
-                changed(property, property.getValue(), null);
+    public Optional<TObservedValue> getCurrentObservableValue() {
+        if (observedValue == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(observedValue.get());
+    }
+
+    /**
+     * Removes this binding as the listener from the {@link #observedValue}, invokes a call to {@link #computeValue()} with the oldValue and then
+     * sets the {@link #observedValue} to null.
+     */
+    private void destroyObservedValue() {
+        if (observedValue != null) {
+            final TObservedValue value = observedValue.get();
+            observedValue.clear();
+            observedValue = null;
+            if (value != null) {
+                unbind(value);
             }
-            observedProperty = null;
         }
     }
 
     /**
-     * Sets the {@link #observedProperty} and adds the this binding as the listener.
+     * Sets the {@link #observedValue} and adds the this binding as the listener.
      *
-     * @param observedProperty the {@link ObservableValue} which will be used as the {@link #observedProperty}
+     * @param observedValue the {@link ObservableValue} which will be used as the {@link #observedValue}
      */
-    void createObservedProperty(@NotNull final ObservableValue<TPropertyValue> observedProperty) {
+    void setObservedValue(@NotNull final TObservedValue observedValue) {
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
-        this.observedProperty = new WeakReference<>(observedProperty);
-        observedProperty.addListener(this);
-        changed(observedProperty, null, observedProperty.getValue());
+        this.observedValue = new WeakReference<>(observedValue);
+        bind(observedValue);
     }
 
     // endregion
 
-    // region Public
+    // region Override ObjectBinding
 
     /**
-     * Removes this binding as the listener from the {@link #observedProperty}, invokes a call to {@link #changed(ObservableValue, Object, Object)} with the oldValue and then
-     * sets the {@link #observedProperty} to null. After the call, this {@link BaseBinding} will not longer work and the {@link #observedProperty} needs to be reset using
-     * {@link #createObservedProperty(ObservableValue)}.
+     * Removes this binding as the listener from the {@link #observedValue}, invokes a call to {@link #computeValue()} with the oldValue and then
+     * sets the {@link #observedValue} to null. After the call, this {@link BaseBinding} will not longer work and the {@link #observedValue} needs to be reset using
+     * {@link #setObservedValue(ObservableValue)}.
      */
+    @Override
     public void dispose() {
-        destroyObservedProperty();
-    }
-
-    // endregion
-
-    // region Implement WeakListener
-
-    /**
-     * Returns true if the {@link #observedProperty} is no longer set.
-     *
-     * @return true if the {@link #observedProperty} is no longer set, otherwise false.
-     */
-    public boolean wasGarbageCollected() {
-        return observedProperty != null && observedProperty.get() == null;
+        super.dispose();
+        destroyObservedValue();
     }
 
     // endregion

@@ -18,6 +18,8 @@ import de.saxsys.bindablefx.mocks.B;
 import de.saxsys.bindablefx.mocks.C;
 import de.saxsys.bindablefx.mocks.D;
 import de.saxsys.bindablefx.mocks.E;
+import de.saxsys.bindablefx.strategy.BidirectionalStrategy;
+import de.saxsys.bindablefx.strategy.UnidirectionalStrategy;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.junit.Before;
@@ -303,7 +305,7 @@ public class CascadedRelayBindingIntegrationTest {
         a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(2L);
 
         // binding for E is disposed
-        assertThat(bindingE, instanceOf(UnidirectionalRelayBinding.class));
+        assertThat(bindingE, instanceOf(UnidirectionalStrategy.class));
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
         assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
     }
@@ -353,7 +355,7 @@ public class CascadedRelayBindingIntegrationTest {
 
 
         // binding for E is disposed
-        assertThat(bindingE, instanceOf(BidirectionalRelayBinding.class));
+        assertThat(bindingE, instanceOf(BidirectionalStrategy.class));
         assertTrue(bindingE.getCurrentObservedValue().isPresent());
 
         // otherX will adjust the Es x property
@@ -532,6 +534,28 @@ public class CascadedRelayBindingIntegrationTest {
     }
 
     //endregion
+
+    // region new Stuff
+
+    /**
+     * These are new ideas for the library
+     */
+    @Test
+    public void newStuff() {
+        waitFor(a.bProperty()).waitFor(B::cProperty).waitFor(C::dProperty).waitFor(D::xProperty).consume(x);
+
+        waitFor(a.bProperty()).waitFor(B::cProperty).waitFor(C::dProperty).waitFor(D::xProperty).bind(x);
+
+        waitFor(a.bProperty()).waitFor(B::cProperty).waitFor(C::dProperty).waitFor(D::xProperty).bind(x, null);
+
+        waitFor(a.bProperty()).waitFor(B::cProperty).waitFor(C::dProperty).waitFor(D::xProperty).bindReverse(x);
+
+        waitFor(a.bProperty()).waitFor(B::cProperty).waitFor(C::dProperty).waitFor(D::xProperty).bindBidirectional(x);
+
+        waitFor(a.bProperty()).waitFor(B::cProperty).waitFor(C::dProperty).waitFor(D::xProperty).bindBidirectional(x, null);
+    }
+
+    // endregion
 
     // endregion
 }

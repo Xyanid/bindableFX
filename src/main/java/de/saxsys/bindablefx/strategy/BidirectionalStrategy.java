@@ -17,29 +17,15 @@ import javafx.beans.property.Property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
-import java.util.Optional;
-import java.util.function.Supplier;
-
 /**
  * @author xyanid on 30.03.2016.
  */
 public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, Property<TValue>, Property<TValue>> {
 
-    // region Fields
-
-    /**
-     * This is the old value that was used so far.
-     */
-    @Nullable
-    private WeakReference<Property<TValue>> oldObservedProperty;
-
-    // endregion
-
     // region Constructor
 
-    BidirectionalStrategy(@NotNull final Supplier<Property<TValue>> observedValueSupplier, @NotNull final Property<TValue> target) {
-        super(observedValueSupplier, target);
+    BidirectionalStrategy(@NotNull final Property<TValue> target) {
+        super(target);
 
     }
 
@@ -48,19 +34,13 @@ public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValu
     //region Protected
 
     protected void unbind(@NotNull final Property<TValue> target) {
-        if (oldObservedProperty != null) {
-            final Property<TValue> oldValue = oldObservedProperty.get();
-            if (oldValue != null) {
-                target.unbindBidirectional(oldValue);
-            }
-        }
+        getOldValue().ifPresent(target::unbindBidirectional);
     }
 
-    protected void bind(@NotNull final Property<TValue> target) {
-        final Optional<Property<TValue>> observedValue = getObservedValue();
-        if (observedValue.isPresent()) {
-            target.bindBidirectional(observedValue.get());
-            oldObservedProperty = new WeakReference<>(observedValue.get());
+    protected void bind(@Nullable final Property<TValue> property, @NotNull final Property<TValue> target) {
+        if (property != null) {
+            target.bindBidirectional(property);
+            setOldValue(property);
         }
 
     }
@@ -70,13 +50,13 @@ public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValu
     // region Override StrategyBinding
 
     @Override
-    public final Property<TValue> computeValue() {
+    public final Property<TValue> computeValue(@Nullable final Property<TValue> property) {
         final Property<TValue> targetProperty = getTarget();
         if (targetProperty != null) {
             unbind(targetProperty);
-            bind(targetProperty);
+            bind(property, targetProperty);
         }
-        return getObservedValue().orElse(null);
+        return property;
     }
 
     @Override

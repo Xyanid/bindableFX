@@ -51,7 +51,7 @@ public abstract class BaseBinding<TObservedValue extends ObservableValue, TCompu
      *
      * @return {@link Optional#empty()} if the {@link #observedValue} is null or an {@link Optional} of the current value of the {@link #observedValue}.
      */
-    public Optional<TObservedValue> getCurrentObservableValue() {
+    public Optional<TObservedValue> getObservableValue() {
         if (observedValue == null) {
             return Optional.empty();
         }
@@ -63,26 +63,24 @@ public abstract class BaseBinding<TObservedValue extends ObservableValue, TCompu
      * Removes this binding as the listener from the {@link #observedValue}, invokes a call to {@link #computeValue()} with the oldValue and then
      * sets the {@link #observedValue} to null.
      */
-    private void destroyObservedValue() {
+    protected void destroyObservedValue() {
         if (observedValue != null) {
             final TObservedValue value = observedValue.get();
             observedValue.clear();
             observedValue = null;
             if (value != null) {
                 unbind(value);
+                computeValue();
             }
         }
     }
 
-    /**
-     * Sets the {@link #observedValue} and adds the this binding as the listener.
-     *
-     * @param observedValue the {@link ObservableValue} which will be used as the {@link #observedValue}
-     */
-    void setObservedValue(@NotNull final TObservedValue observedValue) {
+
+    protected void setObservedValue(@NotNull final TObservedValue observedValue) {
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
         this.observedValue = new WeakReference<>(observedValue);
         bind(observedValue);
+        computeValue();
     }
 
     // endregion

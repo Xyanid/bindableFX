@@ -15,15 +15,14 @@ package de.saxsys.bindablefx.strategy;
 
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * @author xyanid on 30.03.2016.
  */
-public class FallbackValueStrategy<TValue> extends SupplierStrategy<ObservableValue<TValue>, TValue> {
+public class FallbackValueStrategy<TValue> implements IComputeStrategy<ObservableValue<TValue>, TValue> {
 
     // region Fields
 
@@ -34,8 +33,7 @@ public class FallbackValueStrategy<TValue> extends SupplierStrategy<ObservableVa
 
     // region Constructor
 
-    FallbackValueStrategy(@NotNull final Supplier<ObservableValue<TValue>> observableSupplier, @NotNull final Function<TValue, TValue> resolver) {
-        super(observableSupplier);
+    FallbackValueStrategy(@NotNull final Function<TValue, TValue> resolver) {
         this.resolver = resolver;
     }
 
@@ -44,10 +42,9 @@ public class FallbackValueStrategy<TValue> extends SupplierStrategy<ObservableVa
     // region Override RelayBinding
 
     @Override
-    public final TValue computeValue() {
-        final Optional<ObservableValue<TValue>> observableValue = getObservedValue();
-        if (observableValue.isPresent()) {
-            return resolver.apply(observableValue.get().getValue());
+    public final TValue computeValue(@Nullable final ObservableValue<TValue> observableValue) {
+        if (observableValue != null) {
+            return resolver.apply(observableValue.getValue());
         }
 
         return null;

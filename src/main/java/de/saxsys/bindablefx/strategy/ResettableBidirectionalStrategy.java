@@ -17,8 +17,6 @@ import javafx.beans.property.Property;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Supplier;
-
 /**
  * @author xyanid on 30.03.2016.
  */
@@ -36,10 +34,8 @@ public final class ResettableBidirectionalStrategy<TValue> extends Bidirectional
 
     // region Constructor
 
-    ResettableBidirectionalStrategy(@NotNull final Supplier<Property<TValue>> observableSupplier,
-                                    @NotNull final Property<TValue> targetProperty,
-                                    @Nullable final TValue resetValue) {
-        super(observableSupplier, targetProperty);
+    ResettableBidirectionalStrategy(@NotNull final Property<TValue> targetProperty, @Nullable final TValue resetValue) {
+        super(targetProperty);
         this.resetValue = resetValue;
     }
 

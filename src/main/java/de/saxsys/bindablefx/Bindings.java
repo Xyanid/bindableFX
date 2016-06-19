@@ -36,7 +36,7 @@ public final class Bindings {
     // region 2.0 Methods
 
     public final <TObservable extends ObservableValue, TComputedValue> BaseBindingBuilder<TObservable, TComputedValue> observe(@NotNull final TObservable observable) {
-        return new CascadedRelayBinding<>().setObservedValue(observable);
+        return new CascadedBinding<>().setObservedValue(observable);
     }
 
 
@@ -50,18 +50,18 @@ public final class Bindings {
     //    // region Methods
     //
     //    /**
-    //     * Creates a new {@link CascadedRelayBinding} using the given information.
+    //     * Creates a new {@link CascadedBinding} using the given information.
     //     *
     //     * @param property                the {@link Property} the binding will be observing for changes.
     //     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
     //     * @param <TPropertyValue>        the type of the value of the {@link ObservableValue}.
     //     * @param <TRelayedPropertyValue> the type of the value of the relayed {@link ObservableValue}.
     //     *
-    //     * @return a new {@link CascadedRelayBinding}.
+    //     * @return a new {@link CascadedBinding}.
     //     */
-    //    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> attach(
+    //    public static <TPropertyValue, TRelayedPropertyValue> CascadedBinding<TPropertyValue, TRelayedPropertyValue> attach(
     //            @NotNull final ObservableValue<TPropertyValue> property, @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider) {
-    //        return new CascadedRelayBinding<>(property, relayProvider);
+    //        return new CascadedBinding<>(property, relayProvider);
     //    }
     //
     //    /**
@@ -185,19 +185,19 @@ public final class Bindings {
     //    // region Deprecated Methods
     //
     //    /**
-    //     * Creates a new {@link CascadedRelayBinding} using the given information.
+    //     * Creates a new {@link CascadedBinding} using the given information.
     //     *
     //     * @param property                the {@link Property} the binding will be observing for changes.
     //     * @param relayProvider           the {@link Function} to use when the relayed property the binding requires in needed.
     //     * @param <TPropertyValue>        the type of the value of the observed property.
     //     * @param <TRelayedPropertyValue> the type of the value of the relayed property.
     //     *
-    //     * @return a new {@link CascadedRelayBinding}.
+    //     * @return a new {@link CascadedBinding}.
     //     *
     //     * @deprecated will be removed in the next version use {@link #attach(ObservableValue, Function)} instead.
     //     */
     //    @Deprecated
-    //    public static <TPropertyValue, TRelayedPropertyValue> CascadedRelayBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedCascaded(
+    //    public static <TPropertyValue, TRelayedPropertyValue> CascadedBinding<TPropertyValue, TRelayedPropertyValue> bindRelayedCascaded(
     //            @NotNull final ObservableValue<TPropertyValue> property, @NotNull final Function<TPropertyValue, ObservableValue<TRelayedPropertyValue>> relayProvider) {
     //        return attach(property, relayProvider);
     //    }

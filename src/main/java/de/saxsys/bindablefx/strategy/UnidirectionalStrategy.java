@@ -16,9 +16,7 @@ package de.saxsys.bindablefx.strategy;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Optional;
-import java.util.function.Supplier;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author xyanid on 30.03.2016.
@@ -27,8 +25,8 @@ public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TVal
 
     // region Constructor
 
-    UnidirectionalStrategy(@NotNull final Supplier<Property<TValue>> observedValueSupplier, @NotNull final ObservableValue<TValue> target) {
-        super(observedValueSupplier, target);
+    UnidirectionalStrategy(@NotNull final ObservableValue<TValue> target) {
+        super(target);
     }
 
     // endregion
@@ -36,13 +34,17 @@ public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TVal
     // region Protected
 
     private void unbind() {
-        final Optional<Property<TValue>> observedProperty = getObservedValue();
-        observedProperty.ifPresent(Property::unbind);
+        getOldValue().ifPresent(Property::unbind);
     }
 
-    private void bind(@NotNull final ObservableValue<TValue> target) {
-        final Optional<Property<TValue>> observedProperty = getObservedValue();
-        observedProperty.ifPresent(property -> property.bind(target));
+    private void bind(@Nullable final Property<TValue> property) {
+        if (property != null) {
+            final ObservableValue<TValue> target = getTarget();
+            if (target != null) {
+                property.bind(target);
+                setOldValue(property);
+            }
+        }
     }
 
     // endregion
@@ -50,15 +52,12 @@ public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TVal
     // region Override RelayBinding
 
     @Override
-    public final Property<TValue> computeValue() {
+    public final Property<TValue> computeValue(@Nullable final Property<TValue> property) {
         unbind();
-
-        final ObservableValue<TValue> target = getTarget();
-        if (target != null) {
-            bind(target);
-        }
-        return getObservedValue().orElse(null);
+        bind(property);
+        return property;
     }
+
 
     @Override
     public void dispose() {

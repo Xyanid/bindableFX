@@ -27,7 +27,7 @@ public final class StrategyBinding<TObservedValue extends ObservableValue, TComp
     /**
      * This is the {@link IComputeStrategy} that will be invoked when the target
      */
-    private IComputeStrategy<TComputedValue> strategy;
+    private IComputeStrategy<TObservedValue, TComputedValue> strategy;
 
     // endregion
 
@@ -39,8 +39,9 @@ public final class StrategyBinding<TObservedValue extends ObservableValue, TComp
 
     // region Setter
 
-    public void setStrategy(@NotNull final IComputeStrategy<TComputedValue> strategy) {
+    public void setStrategy(@NotNull final IComputeStrategy<TObservedValue, TComputedValue> strategy) {
         this.strategy = strategy;
+        computeValue();
     }
 
     // endregion
@@ -49,7 +50,7 @@ public final class StrategyBinding<TObservedValue extends ObservableValue, TComp
 
     @Override
     protected final TComputedValue computeValue() {
-        return strategy.computeValue();
+        return strategy.computeValue(getObservableValue().orElse(null));
     }
 
     @Override

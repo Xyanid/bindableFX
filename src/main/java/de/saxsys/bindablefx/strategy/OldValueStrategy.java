@@ -13,42 +13,35 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * @author Xyanid on 18.06.2016.
  */
-public abstract class SupplierStrategy<TObservedValue extends ObservableValue, TComputedValue> implements IComputeStrategy<TComputedValue> {
+public abstract class OldValueStrategy<TValue, TComputedValue> implements IComputeStrategy<TValue, TComputedValue> {
 
     // region Fields
 
-    @NotNull
-    private final Supplier<TObservedValue> observedValueSupplier;
+    @Nullable
+    private WeakReference<TValue> oldValue;
 
     // endregion
 
-    //region Constructor
+    //region Getter/Setter
 
-    protected SupplierStrategy(@NotNull final Supplier<TObservedValue> observedValueSupplier) {
-        this.observedValueSupplier = observedValueSupplier;
+    public Optional<TValue> getOldValue() {
+        if (oldValue != null) {
+            return Optional.ofNullable(oldValue.get());
+        }
+        return Optional.empty();
     }
 
-    //endregion
-
-    //region Getter
-
-    /**
-     * Returns the value of the {@link #observedValueSupplier}.
-     *
-     * @return the value of the {@link #observedValueSupplier}.
-     */
-    @NotNull
-    protected final Optional<TObservedValue> getObservedValue() {
-        return Optional.ofNullable(observedValueSupplier.get());
+    public void setOldValue(@NotNull final TValue oldValue) {
+        this.oldValue = new WeakReference<>(oldValue);
     }
 
     //endregion

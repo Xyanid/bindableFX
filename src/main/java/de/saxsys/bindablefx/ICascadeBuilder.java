@@ -16,12 +16,25 @@ package de.saxsys.bindablefx;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 /**
  * @author Xyanid on 18.06.2016.
  */
-public interface ICascadeBuilder {
+public interface ICascadeBuilder<TObservedValue extends ObservableValue, TComputedValue extends ObservableValue> {
 
-    default <TValue, TComputedValue> ICascadeBuilder observe(@NotNull final ObservableValue<TValue> observedValue) {
-        return new CascadedRelayBinding<TValue, TComputedValue>().observe(observedValue);
+    default ICascadeBuilder<TObservedValue, TComputedValue> observe(@NotNull final TObservedValue observedValue) {
+        CascadedBinding<TObservedValue, TComputedValue> result = new CascadedBinding<>();
+        result.setObservedValue(observedValue);
+        return result;
     }
+
+    ICascadeBuilder<TObservedValue, TComputedValue> wait(Function<TObservedValue, TComputedValue> relayProvider);
+
+    <TCascadedComputedValue extends ObservableValue> ICascadeBuilder<TComputedValue, TCascadedComputedValue> waitFor(
+            @NotNull final Function<TComputedValue, TCascadedComputedValue> relayProvider);
+
+    <TCascadedComputedValue> StrategyBinding<TComputedValue, TCascadedComputedValue> consume(@NotNull final Consumer<TComputedValue> previousValueConsumer,
+                                                                                             @NotNull final Consumer<TComputedValue> currentValueConsumer);
 }

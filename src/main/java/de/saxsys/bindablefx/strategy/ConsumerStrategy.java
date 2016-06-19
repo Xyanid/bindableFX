@@ -13,67 +13,46 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
- * This binding will allow for the {@link #previousObjectConsumer} to be invoked whenever a new relayed property was set and {@link #currentObjectConsumer} when for
- * the old relayed property.
- *
  * @author xyanid on 30.03.2016.
  */
-public class ConsumerStrategy<TObservedValue extends ObservableValue> extends SupplierStrategy<TObservedValue, TObservedValue> {
+public class ConsumerStrategy<TValue> extends OldValueStrategy<TValue, Void> {
 
 
     //region Fields
 
-    @Nullable
-    private WeakReference<TObservedValue> oldObservedValue;
+    @NotNull
+    private final Consumer<TValue> previousValueConsumer;
 
     @NotNull
-    private final Consumer<TObservedValue> previousObjectConsumer;
-
-    @NotNull
-    private final Consumer<TObservedValue> currentObjectConsumer;
+    private final Consumer<TValue> currentValueConsumer;
 
     // endregion
 
     // region Constructor
 
-    ConsumerStrategy(@NotNull final Supplier<TObservedValue> observableSupplier,
-                     @NotNull final Consumer<TObservedValue> previousObjectConsumer,
-                     @NotNull final Consumer<TObservedValue> currentObjectConsumer) {
-        super(observableSupplier);
-        this.currentObjectConsumer = previousObjectConsumer;
-        this.previousObjectConsumer = currentObjectConsumer;
+    ConsumerStrategy(@NotNull final Consumer<TValue> previousValueConsumer, @NotNull final Consumer<TValue> currentValueConsumer) {
+        this.previousValueConsumer = previousValueConsumer;
+        this.currentValueConsumer = currentValueConsumer;
     }
 
     // endregion
 
     // region private
 
-    private void consumeOldObservedValue() {
-        // consumeOldObservedValue the old value if it exists
-        if (this.oldObservedValue != null) {
-            final TObservedValue oldObservable = this.oldObservedValue.get();
-            if (oldObservable != null) {
-                currentObjectConsumer.accept(oldObservable);
-            }
-        }
+    private void consumeOldValue() {
+        getOldValue().ifPresent(previousValueConsumer);
     }
 
-    private void consumeObservedValue() {
-        // consumeObservedValue the new value
-        final Optional<TObservedValue> observedValue = getObservedValue();
-        if (observedValue.isPresent()) {
-            oldObservedValue = new WeakReference<>(observedValue.get());
-            previousObjectConsumer.accept(observedValue.get());
+    private void consumeValue(@Nullable final TValue value) {
+        if (value != null) {
+            currentValueConsumer.accept(value);
+            setOldValue(value);
         }
     }
 
@@ -82,15 +61,15 @@ public class ConsumerStrategy<TObservedValue extends ObservableValue> extends Su
     // region Override BaseBinding
 
     @Override
-    public final TObservedValue computeValue() {
-        consumeOldObservedValue();
-        consumeObservedValue();
-        return getObservedValue().orElse(null);
+    public final Void computeValue(@Nullable final TValue value) {
+        consumeOldValue();
+        consumeValue(value);
+        return null;
     }
 
     @Override
     public void dispose() {
-        consumeOldObservedValue();
+        consumeOldValue();
     }
 
     // endregion

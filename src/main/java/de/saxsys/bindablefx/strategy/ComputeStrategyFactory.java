@@ -13,12 +13,9 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import javafx.beans.property.Property;
-import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Xyanid on 18.06.2016.
@@ -33,34 +30,29 @@ public final class ComputeStrategyFactory {
 
     //region Methods
 
-    <TObservable extends ObservableValue> IComputeStrategy<TObservable> createConsumerStrategy(@NotNull final Supplier<TObservable> observableSupplier,
-                                                                                               @NotNull final Consumer<TObservable> previousConsumer,
-                                                                                               @NotNull final Consumer<TObservable> previousObjectConsumer) {
-        return new ConsumerStrategy<>(observableSupplier, previousConsumer, previousObjectConsumer);
+    public static <TValue> IComputeStrategy<TValue, Void> createConsumerStrategy(@NotNull final Consumer<TValue> previousConsumer,
+                                                                                 @NotNull final Consumer<TValue> previousObjectConsumer) {
+        return new ConsumerStrategy<>(previousConsumer, previousObjectConsumer);
     }
 
-    <TObservedValue> IComputeStrategy<Property<TObservedValue>> createBidirectionalStrategy(@NotNull final Supplier<Property<TObservedValue>> observableSupplier,
-                                                                                            @NotNull final Property<TObservedValue> targetProperty) {
-        return new BidirectionalStrategy<>(observableSupplier, targetProperty);
-    }
+    //    public static <TObservedValue> IComputeStrategy<Property<TObservedValue>> createBidirectionalStrategy(@NotNull final Supplier<Property<TObservedValue>>
+    // observableSupplier,
+    //                                                                                                          @NotNull final Property<TObservedValue> targetProperty) {
+    //        return new BidirectionalStrategy<>(observableSupplier, targetProperty);
+    //    }
+    //
+    //    public static <TObservedValue> IComputeStrategy<Property<TObservedValue>> createResettableBidirectionalStrategy(
+    //            @NotNull final Supplier<Property<TObservedValue>> observableSupplier,
+    //            @NotNull final Property<TObservedValue> targetProperty,
+    //            @NotNull final TObservedValue resetValue) {
+    //        return new ResettableBidirectionalStrategy<>(observableSupplier, targetProperty, resetValue);
+    //    }
 
-    <TObservedValue> IComputeStrategy<Property<TObservedValue>> createResettableBidirectionalStrategy(@NotNull final Supplier<Property<TObservedValue>> observableSupplier,
-                                                                                                      @NotNull final Property<TObservedValue> targetProperty,
-                                                                                                      @NotNull final TObservedValue resetValue) {
-        return new ResettableBidirectionalStrategy<>(observableSupplier, targetProperty, resetValue);
-    }
+    //    static <TValue> IComputeStrategy<ObservableValue<TValue>> createUnidirectionalStrategy(@NotNull final Supplier<Property<TValue>> observableSupplier,
+    //                                                                                    @NotNull final ObservableValue<TValue> targetProperty) {
+    //        return new UnidirectionalStrategy<>(observableSupplier, targetProperty);
+    //    }
 
-    <TObservedValue> IComputeStrategy<ObservableValue<TObservedValue>> createUnidirectionalStrategy(@NotNull final Supplier<ObservableValue<TObservedValue>> observableSupplier,
-                                                                                                    @NotNull final Property<TObservedValue> targetProperty) {
-        return new UnidirectionalStrategy<>(observableSupplier, targetProperty);
-    }
-
-    <TObservedValue> IComputeStrategy<ObservableValue<TObservedValue>> createResettableUnidirectionalStrategy(
-            @NotNull final Supplier<ObservableValue<TObservedValue>> observableSupplier,
-            @NotNull final Property<TObservedValue> targetProperty,
-            @NotNull final TObservedValue resetValue) {
-        return new ResettableUnidirectionalStrategy<>(observableSupplier, targetProperty, resetValue);
-    }
 
     //endregion
 }

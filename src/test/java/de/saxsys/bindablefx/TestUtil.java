@@ -35,7 +35,7 @@ final class TestUtil {
     /**
      *
      */
-    static BaseBinding getChild(final CascadedRelayBinding binding) {
+    static BaseBinding getChild(final CascadedBinding binding) {
         return (BaseBinding) Whitebox.getInternalState(binding, "child");
     }
 

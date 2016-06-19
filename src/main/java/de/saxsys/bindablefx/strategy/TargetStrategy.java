@@ -13,17 +13,15 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
-import java.util.function.Supplier;
 
 /**
  * @author Xyanid on 18.06.2016.
  */
-public abstract class TargetStrategy<TObservedValue extends ObservableValue, TComputedValue, TTarget> extends SupplierStrategy<TObservedValue, TComputedValue> {
+public abstract class TargetStrategy<TValue, TComputedValue, TTarget> extends OldValueStrategy<TValue, TComputedValue> {
 
     // region Fields
 
@@ -34,8 +32,7 @@ public abstract class TargetStrategy<TObservedValue extends ObservableValue, TCo
 
     //region Constructor
 
-    protected TargetStrategy(@NotNull final Supplier<TObservedValue> observableSupplier, @NotNull final TTarget target) {
-        super(observableSupplier);
+    protected TargetStrategy(@NotNull final TTarget target) {
         this.target = new WeakReference<>(target);
     }
 

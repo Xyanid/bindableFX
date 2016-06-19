@@ -13,14 +13,16 @@
 
 package de.saxsys.bindablefx.strategy;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * This interface is used to determine the actual value of any binding.
  *
  * @author Xyanid on 18.06.2016.
  */
-public interface IComputeStrategy<TComputedValue> {
+public interface IComputeStrategy<TValue, TComputedValue> {
 
-    TComputedValue computeValue();
+    TComputedValue computeValue(@Nullable final TValue value);
 
     void dispose();
 }

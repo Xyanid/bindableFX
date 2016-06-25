@@ -15,7 +15,7 @@ package de.saxsys.bindablefx;
 
 import de.saxsys.bindablefx.mocks.A;
 import de.saxsys.bindablefx.mocks.B;
-import de.saxsys.bindablefx.strategy.ResettableBidirectionalStrategy;
+import de.saxsys.bindablefx.strategy.FallbackBidirectionalStrategy;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.junit.Before;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
  * @author xyanid on 31.03.2016.
  */
 @RunWith (MockitoJUnitRunner.class)
-public class ResettableBidirectionalStrategyIntegrationTest {
+public class FallbackBidirectionalStrategyIntegrationTest {
 
     // region Fields
 
@@ -43,7 +43,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
     private ObjectProperty<Long> x;
 
-    private ResettableBidirectionalStrategy<B, Long> cut;
+    private FallbackBidirectionalStrategy<B, Long> cut;
 
     // endregion
 
@@ -67,7 +67,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void whenTheObservedPropertyIsChangedTheBindingWillBeInformed() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
@@ -88,7 +88,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
 
@@ -96,7 +96,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(null);
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
     }
@@ -111,7 +111,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void changingTheTargetPropertyAfterTheObservedPropertyWillAdjustTheRelayedProperty() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);
@@ -125,7 +125,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void changingTheTargetPropertyBeforeTheObservedPropertyWillAdjustTheRelayedProperty() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         x.setValue(2L);
         a.bProperty().setValue(new B());
@@ -142,7 +142,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
         x.setValue(2L);
         a.bProperty().setValue(new B());
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -155,7 +155,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
         x.setValue(2L);
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
 
@@ -170,7 +170,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         x.setValue(2L);
 
@@ -185,7 +185,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().getValue().xProperty().setValue(2L);
 
@@ -201,7 +201,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(2L);
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -214,7 +214,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().getValue().xProperty().setValue(2L);
 
@@ -294,7 +294,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingWillStopListeningForChangesOnTheObservedProperty() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
@@ -315,7 +315,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingClearTheReferenceToTheTargetProperty() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
 
@@ -332,7 +332,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingWillPreventTheRelayedPropertyToAffectTheTargetProperty() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(2L);
@@ -352,7 +352,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingWillPreventTheTargetPropertyToAffectTheRelayedProperty() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);
@@ -372,7 +372,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void garbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);
@@ -396,7 +396,7 @@ public class ResettableBidirectionalStrategyIntegrationTest {
     @Test
     public void garbageCollectingTheObservedPropertyWillDisposeTheBinding() {
 
-        cut = new ResettableBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);

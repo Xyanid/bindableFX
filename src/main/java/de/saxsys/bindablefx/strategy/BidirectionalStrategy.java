@@ -20,11 +20,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, Property<TValue>, Property<TValue>> {
+public class BidirectionalStrategy<TValue, TProperty extends Property<TValue>> extends TargetStrategy<TProperty, TProperty, TProperty> {
 
     // region Constructor
 
-    BidirectionalStrategy(@NotNull final Property<TValue> target) {
+    BidirectionalStrategy(@NotNull final TProperty target) {
         super(target);
 
     }
@@ -33,11 +33,11 @@ public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValu
 
     //region Protected
 
-    protected void unbind(@NotNull final Property<TValue> target) {
+    protected void unbind(@NotNull final TProperty target) {
         getOldValue().ifPresent(target::unbindBidirectional);
     }
 
-    protected void bind(@Nullable final Property<TValue> property, @NotNull final Property<TValue> target) {
+    protected void bind(@Nullable final TProperty property, @NotNull final TProperty target) {
         if (property != null) {
             target.bindBidirectional(property);
             setOldValue(property);
@@ -50,20 +50,20 @@ public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValu
     // region Override StrategyBinding
 
     @Override
-    public final Property<TValue> computeValue(@Nullable final Property<TValue> property) {
-        final Property<TValue> targetProperty = getTarget();
-        if (targetProperty != null) {
-            unbind(targetProperty);
-            bind(property, targetProperty);
+    public final TProperty computeValue(@Nullable final TProperty property) {
+        final TProperty target = getTarget();
+        if (target != null) {
+            unbind(target);
+            bind(property, target);
         }
         return property;
     }
 
     @Override
     public final void dispose() {
-        final Property<TValue> targetProperty = getTarget();
-        if (targetProperty != null) {
-            unbind(getTarget());
+        final TProperty target = getTarget();
+        if (target != null) {
+            unbind(target);
         }
     }
 

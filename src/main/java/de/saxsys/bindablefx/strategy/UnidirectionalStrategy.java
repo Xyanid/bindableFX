@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author xyanid on 30.03.2016.
  */
-public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, Property<TValue>, ObservableValue<TValue>> {
+public class UnidirectionalStrategy<TValue, TProperty extends Property<TValue>> extends TargetStrategy<TProperty, TProperty, ObservableValue<TValue>> {
 
     // region Constructor
 
@@ -37,7 +37,7 @@ public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TVal
         getOldValue().ifPresent(Property::unbind);
     }
 
-    private void bind(@Nullable final Property<TValue> property) {
+    private void bind(@Nullable final TProperty property) {
         if (property != null) {
             final ObservableValue<TValue> target = getTarget();
             if (target != null) {
@@ -52,7 +52,7 @@ public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TVal
     // region Override RelayBinding
 
     @Override
-    public final Property<TValue> computeValue(@Nullable final Property<TValue> property) {
+    public final TProperty computeValue(@Nullable final TProperty property) {
         unbind();
         bind(property);
         return property;

@@ -13,41 +13,45 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Function;
 
 /**
  * @author xyanid on 30.03.2016.
  */
-public final class ResettableBidirectionalStrategy<TValue> extends BidirectionalStrategy<TValue> {
+public class FallbackStrategy<TValue, TObservedValue extends ObservableValue<TValue>> implements IComputeStrategy<TObservedValue, TValue> {
 
     // region Fields
 
-    /**
-     * This value wil be used when the relayed property is unbound.
-     */
-    @Nullable
-    private final TValue resetValue;
+    @NotNull
+    private final Function<TValue, TValue> resolver;
 
     // endregion
 
     // region Constructor
 
-    ResettableBidirectionalStrategy(@NotNull final Property<TValue> targetProperty, @Nullable final TValue resetValue) {
-        super(targetProperty);
-        this.resetValue = resetValue;
+    public FallbackStrategy(@NotNull final Function<TValue, TValue> resolver) {
+        this.resolver = resolver;
     }
 
     // endregion
 
-    // region Override BidirectionalBinding
+    // region Override RelayBinding
 
     @Override
-    protected void unbind(@NotNull final Property<TValue> target) {
-        super.unbind(target);
-        target.setValue(resetValue);
+    public final TValue computeValue(@Nullable final TObservedValue observableValue) {
+        if (observableValue != null) {
+            return resolver.apply(observableValue.getValue());
+        }
+
+        return null;
     }
+
+    @Override
+    public void dispose() {}
 
     // endregion
 }

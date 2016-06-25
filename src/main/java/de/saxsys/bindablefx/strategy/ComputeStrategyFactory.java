@@ -13,9 +13,13 @@
 
 package de.saxsys.bindablefx.strategy;
 
+import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * @author Xyanid on 18.06.2016.
@@ -30,28 +34,28 @@ public final class ComputeStrategyFactory {
 
     //region Methods
 
+    public static <TValue, TProperty extends Property<TValue>> IComputeStrategy<TProperty, TProperty> createUnidirectionalStrategy(@NotNull final ObservableValue<TValue> target) {
+        return new UnidirectionalStrategy<>(target);
+    }
+
     public static <TValue> IComputeStrategy<TValue, Void> createConsumerStrategy(@NotNull final Consumer<TValue> previousConsumer,
                                                                                  @NotNull final Consumer<TValue> previousObjectConsumer) {
         return new ConsumerStrategy<>(previousConsumer, previousObjectConsumer);
     }
 
-    //    public static <TObservedValue> IComputeStrategy<Property<TObservedValue>> createBidirectionalStrategy(@NotNull final Supplier<Property<TObservedValue>>
-    // observableSupplier,
-    //                                                                                                          @NotNull final Property<TObservedValue> targetProperty) {
-    //        return new BidirectionalStrategy<>(observableSupplier, targetProperty);
-    //    }
-    //
-    //    public static <TObservedValue> IComputeStrategy<Property<TObservedValue>> createResettableBidirectionalStrategy(
-    //            @NotNull final Supplier<Property<TObservedValue>> observableSupplier,
-    //            @NotNull final Property<TObservedValue> targetProperty,
-    //            @NotNull final TObservedValue resetValue) {
-    //        return new ResettableBidirectionalStrategy<>(observableSupplier, targetProperty, resetValue);
-    //    }
+    public static <TValue, TObservedValue extends ObservableValue<TValue>> IComputeStrategy<TObservedValue, TValue> createFallbackStrategy(
+            @NotNull final Function<TValue, TValue> resolver) {
+        return new FallbackStrategy<>(resolver);
+    }
 
-    //    static <TValue> IComputeStrategy<ObservableValue<TValue>> createUnidirectionalStrategy(@NotNull final Supplier<Property<TValue>> observableSupplier,
-    //                                                                                    @NotNull final ObservableValue<TValue> targetProperty) {
-    //        return new UnidirectionalStrategy<>(observableSupplier, targetProperty);
-    //    }
+    public static <TValue, TProperty extends Property<TValue>> IComputeStrategy<TProperty, TProperty> createBidirectionalStrategy(@NotNull final TProperty target) {
+        return new BidirectionalStrategy<>(target);
+    }
+
+    public static <TValue, TProperty extends Property<TValue>> IComputeStrategy<TProperty, TProperty> createFallbackBidirectionalStrategy(@NotNull final TProperty targetProperty,
+                                                                                                                                          @Nullable final TValue fallbackValue) {
+        return new FallbackBidirectionalStrategy<>(targetProperty, fallbackValue);
+    }
 
 
     //endregion

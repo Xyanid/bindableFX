@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
  */
 @SuppressWarnings ("OptionalGetWithoutIsPresent")
 @RunWith (MockitoJUnitRunner.class)
-public class CascadedBindingIntegrationTest {
+public class NestedBindingIntegrationTest {
 
     // region Fields
 
@@ -50,7 +50,7 @@ public class CascadedBindingIntegrationTest {
 
     private ObjectProperty<Long> x;
 
-    private CascadedBinding<B, C> cut;
+    private NestedBinding<B, C> cut;
 
     // endregion
 
@@ -74,29 +74,29 @@ public class CascadedBindingIntegrationTest {
     @Test
     public void cascadedBindingChainCanBeCreatedEvenIfTheObservedPropertiesAreNotYetSet() {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
         assertEquals(a.bProperty(), TestUtil.getObservedProperty(cut).get());
 
         assertNotNull(bindingC);
         assertFalse(bindingC.getCurrentObservedValue().isPresent());
-        assertThat(bindingC, instanceOf(CascadedBinding.class));
+        assertThat(bindingC, instanceOf(NestedBinding.class));
 
         assertNotNull(bindingD);
         assertFalse(bindingD.getCurrentObservedValue().isPresent());
-        assertThat(bindingD, instanceOf(CascadedBinding.class));
+        assertThat(bindingD, instanceOf(NestedBinding.class));
 
         assertNotNull(bindingE);
         assertFalse(bindingE.getCurrentObservedValue().isPresent());
-        assertThat(bindingE, instanceOf(CascadedBinding.class));
+        assertThat(bindingE, instanceOf(NestedBinding.class));
 
-        assertNull(TestUtil.getChild((CascadedBinding) bindingE));
+        assertNull(TestUtil.getChild((NestedBinding) bindingE));
     }
 
     /**
@@ -105,12 +105,12 @@ public class CascadedBindingIntegrationTest {
     @Test
     public void changingTheObservedPropertiesWillSetTheBindings() throws Throwable {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         a.bProperty().setValue(new B());
 
@@ -151,12 +151,12 @@ public class CascadedBindingIntegrationTest {
         a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
         a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         // binding for B know what to do
         assertTrue(cut.getCurrentObservedValue().isPresent());
@@ -194,12 +194,12 @@ public class CascadedBindingIntegrationTest {
         a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
         a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         C oldC = a.bProperty().getValue().cProperty().getValue();
 
@@ -245,12 +245,12 @@ public class CascadedBindingIntegrationTest {
         a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
         a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         C oldC = a.bProperty().getValue().cProperty().getValue();
 
@@ -291,12 +291,12 @@ public class CascadedBindingIntegrationTest {
     @Test
     public void creatingAUnidirectionalBindingWillAllowToBindTheRelayedProperty() {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).bind(E::xProperty, x);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());
@@ -316,12 +316,12 @@ public class CascadedBindingIntegrationTest {
     @Test
     public void creatingAReverseUnidirectionalBindingWillAllowToBindTheRelayedProperty() {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).bindReverse(E::xProperty, x);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());
@@ -341,12 +341,12 @@ public class CascadedBindingIntegrationTest {
     @Test
     public void creatingABidirectionalBindingWillAllowToBindTheRelayedProperty() {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).bindBidirectional(E::xProperty, x);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());
@@ -435,12 +435,12 @@ public class CascadedBindingIntegrationTest {
     @Test
     public void disposingABindingWillDisposeAllItsChildBindings() throws Throwable {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         bindingC.dispose();
 
@@ -468,17 +468,17 @@ public class CascadedBindingIntegrationTest {
     }
 
     /**
-     * When the observed property of the first {@link CascadedBinding} is disposed, all the other observed properties of the child bindings will also no longer have a value.
+     * When the observed property of the first {@link NestedBinding} is disposed, all the other observed properties of the child bindings will also no longer have a value.
      */
     @Test
     public void whenTheFirstObservedPropertyIsGarbageCollectedTheEntireCascadedChainWillBeDisposed() throws Throwable {
 
-        cut = new CascadedBinding<>(a.bProperty(), B::cProperty);
+        cut = new NestedBinding<>(a.bProperty(), B::cProperty);
         cut.attach(C::dProperty).attach(D::eProperty).attach(E::xProperty);
 
         BaseBinding bindingC = TestUtil.getChild(cut);
-        BaseBinding bindingD = TestUtil.getChild((CascadedBinding) bindingC);
-        BaseBinding bindingE = TestUtil.getChild((CascadedBinding) bindingD);
+        BaseBinding bindingD = TestUtil.getChild((NestedBinding) bindingC);
+        BaseBinding bindingE = TestUtil.getChild((NestedBinding) bindingD);
 
         a.bProperty().setValue(new B());
         a.bProperty().getValue().cProperty().setValue(new C());

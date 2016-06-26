@@ -18,9 +18,11 @@ import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 
 /**
+ * This binding executes the provided {@link IComputeStrategy}, whenever its {@link BaseBinding#observedValue} is changed.
+ *
  * @author xyanid on 30.03.2016.
  */
-public final class StrategyBinding<TObservedValue extends ObservableValue, TComputedValue> extends BaseBinding<TObservedValue, TComputedValue> {
+final class StrategyBinding<TObservedValue extends ObservableValue, TComputedValue> extends BaseBinding<TObservedValue, TComputedValue> {
 
     // region Fields
 
@@ -39,7 +41,12 @@ public final class StrategyBinding<TObservedValue extends ObservableValue, TComp
 
     // region Setter
 
-    public void setStrategy(@NotNull final IComputeStrategy<TObservedValue, TComputedValue> strategy) {
+    /**
+     * sets
+     *
+     * @param strategy
+     */
+    void setStrategy(@NotNull final IComputeStrategy<TObservedValue, TComputedValue> strategy) {
         this.strategy = strategy;
         computeValue();
     }

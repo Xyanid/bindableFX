@@ -22,7 +22,7 @@ import java.lang.ref.WeakReference;
 import java.util.Optional;
 
 /**
- * This is the baseBinding which will be used
+ * This is the base class for all bindings contains a {@link WeakReference} to the {@link ObservableValue} is is bound against.
  *
  * @author xyanid on 30.03.2016.
  */
@@ -60,22 +60,26 @@ public abstract class BaseBinding<TObservedValue extends ObservableValue, TCompu
     }
 
     /**
-     * Removes this binding as the listener from the {@link #observedValue}, invokes a call to {@link #computeValue()} with the oldValue and then
+     * Removes this binding as the listener from the {@link #observedValue}, invokes a call to {@link #computeValue()} and then
      * sets the {@link #observedValue} to null.
      */
     protected void destroyObservedValue() {
         if (observedValue != null) {
             final TObservedValue value = observedValue.get();
-            observedValue.clear();
-            observedValue = null;
             if (value != null) {
                 unbind(value);
                 computeValue();
             }
+            observedValue.clear();
+            observedValue = null;
         }
     }
 
-
+    /**
+     * Creates a new {@link WeakReference} to the given {@link ObservableValue} and uses its own {@link #observedValue}.
+     *
+     * @param observedValue the {@link ObservableValue} to use.
+     */
     protected void setObservedValue(@NotNull final TObservedValue observedValue) {
         // set the property that is being observe and invoke a change so that the implementation can bind the property correctly
         this.observedValue = new WeakReference<>(observedValue);

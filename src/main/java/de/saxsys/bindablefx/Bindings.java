@@ -13,11 +13,12 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * This is a utility class much like the original javaFX {@link javafx.beans.binding.Bindings} to allow easier usage of the binding mechanisms.
+ * Utility class to allow for the binding mechanisms in the lib to be used and is also the only point of entrance.
  *
  * @author Xyanid on 06.05.2016.
  */
@@ -32,12 +33,23 @@ public final class Bindings {
 
     // endregion
 
-    // region 2.0 Methods
+    // region Methods
 
-    public final <TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends ObservableValue<TComputedValue>> CascadedBinding<TValue,
+    /**
+     * Creates a new {@link INestedBuilder} that listens to changes made to the given {@link ObservableValue} and then invokes its own binding mechanism.
+     *
+     * @param observedValue            the {@link ObservableValue} to listen to.
+     * @param <TValue>                 the type of the value of the {@link ObservableValue}
+     * @param <TObservedValue>         the type of the {@link ObservableValue}
+     * @param <TComputedValue>         the type of the value of the {@link Property} that is computed.
+     * @param <TComputedObservedValue> the type of the {@link Property} that is computed.
+     *
+     * @return a new {@link INestedBuilder}.
+     */
+    public final <TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends Property<TComputedValue>> INestedBuilder<TValue,
             TObservedValue, TComputedValue, TComputedObservedValue> observe(
             @NotNull final TObservedValue observedValue) {
-        return new CascadedBinding<TValue, TObservedValue, TComputedValue, TComputedObservedValue>().observe(observedValue);
+        return new NestedBinding<TValue, TObservedValue, TComputedValue, TComputedObservedValue>().observe(observedValue);
     }
 
     // endregion

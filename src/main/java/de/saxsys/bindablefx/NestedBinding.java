@@ -25,7 +25,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * This is a child that acts as an intermediate child so that multiple cascaded properties can be observed and the desired property can be bound at the
+ * This is a binding that acts as an intermediate binding so that multiple cascaded properties can be observed and the desired property can be bound at the
  * very end. So if you want to bind a property which itself is contained cascadingly in other properties.
  * <p>
  * e.G. if we have a class A which hold a property of B, which hold property of C, which holds a property of D and D is the property we want to bind to, we
@@ -38,7 +38,7 @@ import java.util.function.Supplier;
  * }
  * </pre>
  * However since B and C might be null we would need to listen to the values to become available at some point in time. This is where the
- * {@link CascadedBinding} comes into play and handles this by attaching listeners cascadingly so that we can bind to D with no concern that B or C might be
+ * {@link NestedBinding} comes into play and handles this by attaching listeners cascadingly so that we can bind to D with no concern that B or C might be
  * null, change or become invalid.
  * <p>
  * e.g. using the above example, the code to safely bind to D would look like this.
@@ -47,14 +47,14 @@ import java.util.function.Supplier;
  * A a = new A();
  * ObjectProperty<Long> property = new SimpleObjectProperty<>();
  *
- * new CascadedBinding(a.bProperty(), B::cProperty).bindBidirectional(C::dProperty, property, false);
+ * new NestedBinding(a.bProperty(), B::cProperty).bindBidirectional(C::dProperty, property, false);
  * }
  * </pre>
  *
  * @author xyanid on 30.03.2016.
  */
-public class CascadedBinding<TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends Property<TComputedValue>>
-        extends BaseBinding<TObservedValue, TComputedObservedValue> {
+class NestedBinding<TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends Property<TComputedValue>>
+        extends BaseBinding<TObservedValue, TComputedObservedValue> implements INestedBuilder<TValue, TObservedValue, TComputedValue, TComputedObservedValue> {
 
     // region Fields
 
@@ -62,7 +62,7 @@ public class CascadedBinding<TValue, TObservedValue extends ObservableValue<TVal
      * This function will be called when the {@link #observedValue} has changed.
      */
     @Nullable
-    private Function<TObservedValue, TComputedObservedValue> relayProvider;
+    private Function<TObservedValue, TComputedObservedValue> nestedResolver;
 
     /**
      * The child binding held by this cascaded binding.
@@ -74,14 +74,14 @@ public class CascadedBinding<TValue, TObservedValue extends ObservableValue<TVal
 
     // region Constructor
 
-    CascadedBinding() {}
+    NestedBinding() {}
 
     // endregion
 
     // region Setter
 
-    private void setRelayProvider(@NotNull final Function<TObservedValue, TComputedObservedValue> relayProvider) {
-        this.relayProvider = relayProvider;
+    private void setNestedResolver(@NotNull final Function<TObservedValue, TComputedObservedValue> nestedResolver) {
+        this.nestedResolver = nestedResolver;
         computeValue();
     }
 
@@ -124,7 +124,9 @@ public class CascadedBinding<TValue, TObservedValue extends ObservableValue<TVal
 
         final TObservedValue observedValue = getObservableValue().orElse(null);
 
-        final TComputedObservedValue computedValue = relayProvider != null && observedValue != null && observedValue.getValue() != null ? relayProvider.apply(observedValue) : null;
+        final TComputedObservedValue
+                computedValue =
+                nestedResolver != null && observedValue != null && observedValue.getValue() != null ? nestedResolver.apply(observedValue) : null;
 
         if (child != null) {
             // if the computed value we give to the child
@@ -153,60 +155,60 @@ public class CascadedBinding<TValue, TObservedValue extends ObservableValue<TVal
 
     // region Public
 
-    public CascadedBinding<TValue, TObservedValue, TComputedValue, TComputedObservedValue> observe(@NotNull final TObservedValue observedValue) {
-        setObservedValue(observedValue);
+    @Override
+    public INestedBuilder<TValue, TObservedValue, TComputedValue, TComputedObservedValue> thenObserve(
+            @NotNull final InitialFunction<TObservedValue, TComputedObservedValue> relayProvider) {
+        setNestedResolver(relayProvider);
         return this;
     }
 
-    public CascadedBinding<TValue, TObservedValue, TComputedValue, TComputedObservedValue> waitForInitial(
-            @NotNull final Function<TObservedValue, TComputedObservedValue> relayProvider) {
-        setRelayProvider(relayProvider);
-        return this;
-    }
-
-    public <TCascadedComputedValue, TCascadedComputedObservedValue extends Property<TCascadedComputedValue>> CascadedBinding<TComputedValue, TComputedObservedValue,
-            TCascadedComputedValue, TCascadedComputedObservedValue> waitFor(
+    @Override
+    public <TCascadedComputedValue, TCascadedComputedObservedValue extends Property<TCascadedComputedValue>> INestedBuilder<TComputedValue, TComputedObservedValue,
+            TCascadedComputedValue, TCascadedComputedObservedValue> thenObserve(
             @NotNull final Function<TComputedObservedValue, TCascadedComputedObservedValue> relayProvider) {
-        final CascadedBinding<TComputedValue, TComputedObservedValue, TCascadedComputedValue, TCascadedComputedObservedValue>
-                result =
-                createChild(new CascadedBinding<TComputedValue, TComputedObservedValue, TCascadedComputedValue, TCascadedComputedObservedValue>());
-        result.setRelayProvider(relayProvider);
+        final NestedBinding<TComputedValue, TComputedObservedValue, TCascadedComputedValue, TCascadedComputedObservedValue>
+                result = createChild(new NestedBinding<TComputedValue, TComputedObservedValue, TCascadedComputedValue, TCascadedComputedObservedValue>());
+        result.setNestedResolver(relayProvider);
         return result;
     }
 
-    public StrategyBinding<TComputedObservedValue, Void> consume(@NotNull final Consumer<TComputedObservedValue> previousValueConsumer,
-                                                                 @NotNull final Consumer<TComputedObservedValue> currentValueConsumer) {
+    @Override
+    public StrategyBinding<TComputedObservedValue, Void> thenConsume(@NotNull final Consumer<TComputedObservedValue> previousValueConsumer,
+                                                                     @NotNull final Consumer<TComputedObservedValue> currentValueConsumer) {
         final StrategyBinding<TComputedObservedValue, Void> result = createChild(new StrategyBinding<TComputedObservedValue, Void>());
         final IComputeStrategy<TComputedObservedValue, Void> strategy = ComputeStrategyFactory.createConsumerStrategy(previousValueConsumer, currentValueConsumer);
         result.setStrategy(strategy);
         return result;
     }
 
-    public StrategyBinding<TComputedObservedValue, TComputedValue> fallbackOn(@NotNull final Function<TComputedValue, TComputedValue> resolver) {
+    @Override
+    public StrategyBinding<TComputedObservedValue, TComputedValue> thenFallbackOn(@NotNull final Function<TComputedValue, TComputedValue> resolver) {
         final StrategyBinding<TComputedObservedValue, TComputedValue> result = createChild(new StrategyBinding<TComputedObservedValue, TComputedValue>());
         final IComputeStrategy<TComputedObservedValue, TComputedValue> strategy = ComputeStrategyFactory.createFallbackStrategy(resolver);
         result.setStrategy(strategy);
         return result;
     }
 
-    public <TComputedProperty extends Property<TComputedValue>> StrategyBinding<TComputedObservedValue, TComputedObservedValue> bind(
-            @NotNull final ObservableValue<TComputedValue> target) {
+
+    @Override
+    public StrategyBinding<TComputedObservedValue, TComputedObservedValue> thenBind(@NotNull final ObservableValue<TComputedValue> target) {
         final StrategyBinding<TComputedObservedValue, TComputedObservedValue> result = createChild(new StrategyBinding<TComputedObservedValue, TComputedObservedValue>());
         final IComputeStrategy<TComputedObservedValue, TComputedObservedValue> strategy = ComputeStrategyFactory.createUnidirectionalStrategy(target);
         result.setStrategy(strategy);
         return result;
     }
 
-    public <TComputedProperty extends Property<TComputedValue>> StrategyBinding<TComputedObservedValue, TComputedObservedValue> bindBidirectional(
-            @NotNull final TComputedObservedValue target) {
+    @Override
+    public StrategyBinding<TComputedObservedValue, TComputedObservedValue> thenBindBidirectional(@NotNull final TComputedObservedValue target) {
         final StrategyBinding<TComputedObservedValue, TComputedObservedValue> result = createChild(new StrategyBinding<TComputedObservedValue, TComputedObservedValue>());
         final IComputeStrategy<TComputedObservedValue, TComputedObservedValue> strategy = ComputeStrategyFactory.createBidirectionalStrategy(target);
         result.setStrategy(strategy);
         return result;
     }
 
-    public <TComputedProperty extends Property<TComputedValue>> StrategyBinding<TComputedObservedValue, TComputedObservedValue> bindBidirectionalOrFallbackOn(
-            @NotNull final TComputedObservedValue target, @Nullable final TComputedValue fallbackValue) {
+    @Override
+    public StrategyBinding<TComputedObservedValue, TComputedObservedValue> thenBindBidirectionalOrFallbackOn(@NotNull final TComputedObservedValue target,
+                                                                                                             @Nullable final TComputedValue fallbackValue) {
         final StrategyBinding<TComputedObservedValue, TComputedObservedValue> result = createChild(new StrategyBinding<TComputedObservedValue, TComputedObservedValue>());
         final IComputeStrategy<TComputedObservedValue, TComputedObservedValue> strategy = ComputeStrategyFactory.createFallbackBidirectionalStrategy(target, fallbackValue);
         result.setStrategy(strategy);

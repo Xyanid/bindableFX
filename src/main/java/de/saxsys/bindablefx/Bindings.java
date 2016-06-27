@@ -46,7 +46,7 @@ public final class Bindings {
      *
      * @return a new {@link INestedBuilder}.
      */
-    public final <TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends Property<TComputedValue>> INestedBuilder<TValue,
+    public final <TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends Property<TComputedValue>> NestedBinding<TValue,
             TObservedValue, TComputedValue, TComputedObservedValue> observe(
             @NotNull final TObservedValue observedValue) {
         return new NestedBinding<TValue, TObservedValue, TComputedValue, TComputedObservedValue>().observe(observedValue);

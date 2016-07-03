@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author xyanid on 30.03.2016.
  */
-public final class FallbackBidirectionalStrategy<TValue, TProperty extends Property<TValue>> extends BidirectionalStrategy<TValue, TProperty> {
+public final class FallbackBidirectionalStrategy<TValue> extends BidirectionalStrategy<TValue> {
 
     // region Fields
 
@@ -34,7 +34,7 @@ public final class FallbackBidirectionalStrategy<TValue, TProperty extends Prope
 
     // region Constructor
 
-    FallbackBidirectionalStrategy(@NotNull final TProperty target, @Nullable final TValue fallbackValue) {
+    FallbackBidirectionalStrategy(@NotNull final Property<TValue> target, @Nullable final TValue fallbackValue) {
         super(target);
         this.fallbackValue = fallbackValue;
     }
@@ -49,7 +49,7 @@ public final class FallbackBidirectionalStrategy<TValue, TProperty extends Prope
      * @param target the current {@link #target}.
      */
     @Override
-    protected void unbind(@NotNull final TProperty target) {
+    protected void unbind(@NotNull final Property<TValue> target) {
         super.unbind(target);
         target.setValue(fallbackValue);
     }

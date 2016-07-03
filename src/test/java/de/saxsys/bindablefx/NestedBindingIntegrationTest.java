@@ -81,7 +81,7 @@ public class NestedBindingIntegrationTest {
         NestedBinding bindingD = TestUtil.getChild(bindingC);
         NestedBinding bindingE = TestUtil.getChild(bindingD);
 
-        assertFalse(cut.getObservableValue().isPresent());
+        assertTrue(cut.getObservableValue().isPresent());
         assertEquals(a.bProperty(), TestUtil.getObservedValue(cut).get());
 
         assertNotNull(bindingC);

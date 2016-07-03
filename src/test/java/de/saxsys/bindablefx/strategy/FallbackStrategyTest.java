@@ -20,7 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author xyanid on 31.03.2016.
  */
 @RunWith (MockitoJUnitRunner.class)
-public class FallbackBidirectionalStrategyIntegrationTest {
+public class FallbackStrategyTest {
 
     //    // region Fields
     //
@@ -28,7 +28,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //
     //    private ObjectProperty<Long> x;
     //
-    //    private FallbackBidirectionalStrategy<B, Long> cut;
+    //    private ResettableUnidirectionalStrategy<B, Long> cut;
     //
     //    // endregion
     //
@@ -50,9 +50,9 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //     * Creating a bidirectional binding will allow for the desired property to be observed and the binding will be informed about changes.
     //     */
     //    @Test
-    //    public void whenTheObservedPropertyIsChangedTheBindingWillBeInformed() {
+    //    public void whenTheObservedPropertyIsChangedTheBindingWillBeInformed() throws Throwable {
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        assertFalse(cut.getCurrentObservedValue().isPresent());
     //
@@ -69,11 +69,11 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //     * When a Binding is creates and the observed property is already set, the binding mechanism will be invoked and the target property will be bound against the relayed property.
     //     */
     //    @Test
-    //    public void creatingABindingWhenTheObservedPropertyIsAlreadySetWillBindTheTargetPropertyAgainstTheRelayedProperty() {
+    //    public void creatingABindingWhenTheObservedPropertyIsAlreadySetWillBindTheTargetPropertyAgainstTheRelayedProperty() throws Throwable {
     //
     //        a.bProperty().setValue(new B());
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        assertTrue(cut.getCurrentObservedValue().isPresent());
     //
@@ -81,7 +81,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //
     //        a.bProperty().setValue(null);
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        assertFalse(cut.getCurrentObservedValue().isPresent());
     //    }
@@ -91,29 +91,15 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //    //region Changing
     //
     //    /**
-    //     * When the target property is changed after the observed property was changed, the relayed property will be changed as well.
+    //     * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
     //     */
     //    @Test
-    //    public void changingTheTargetPropertyAfterTheObservedPropertyWillAdjustTheRelayedProperty() {
-    //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
-    //
-    //        a.bProperty().setValue(new B());
-    //        x.setValue(2L);
-    //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    /**
-    //     * When the target property is changed before the observed property is changed, the relayed property will be changed as well.
-    //     */
-    //    @Test
-    //    public void changingTheTargetPropertyBeforeTheObservedPropertyWillAdjustTheRelayedProperty() {
-    //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //    public void whenTheTargetPropertyAndTheObservedPropertyAreAlreadySetTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
     //
     //        x.setValue(2L);
     //        a.bProperty().setValue(new B());
+    //
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //    }
@@ -122,55 +108,83 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //     * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
     //     */
     //    @Test
-    //    public void whenTheTargetPropertyAndTheObservedPropertyAreAlreadySetTheRelayedPropertyWillHaveTheSameValue() {
+    //    public void whenTheTargetPropertyAndTheRelayedPropertyAreAlreadySetTheRelayedPropertyWillBePreferred() {
     //
     //        x.setValue(2L);
     //        a.bProperty().setValue(new B());
+    //        a.bProperty().getValue().xProperty().setValue(10L);
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    //        assertEquals(10L, x.getValue().longValue());
     //    }
     //
     //    /**
-    //     * When the target property is already set and the observed property get set, the relayed property have the same value as the target property.
+    //     * When the target property is changed after the observed property is changed, an exception will be thrown because it is already bound and hence can not be changed.
     //     */
-    //    @Test
-    //    public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheRelayedPropertyWillHaveTheSameValue() {
+    //    @Test (expected = RuntimeException.class)
+    //    public void changingTheTargetPropertyAfterTheObservedPropertyWillThrowAnException() {
     //
-    //        x.setValue(2L);
-    //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
-    //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    /**
-    //     * When the target property get set and the observed property is already set, the relayed property have the same value as the target property.
-    //     */
-    //    @Test
-    //    public void whenTheTargetPropertyChangesAndTheObservedPropertyIsAlreadySetTheRelayedPropertyWillHaveTheSameValue() {
-    //
-    //        a.bProperty().setValue(new B());
-    //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
-    //
     //        x.setValue(2L);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //    }
     //
     //    /**
-    //     * When the relayed property changes the target property will have the same value
+    //     * When the target property is changed before the observed property is changed, no exception will be thrown because the target property is not yet bound.
     //     */
     //    @Test
-    //    public void whenTheRelayedPropertyChangesTheTargetPropertyWillHaveTheSameValue() {
+    //    public void changingTheTargetPropertyBeforeTheObservedPropertyWillNotThrowAnException() {
+    //
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //
+    //        x.setValue(2L);
+    //        a.bProperty().setValue(new B());
+    //
+    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    //    }
+    //
+    //    /**
+    //     * When the relayed property is changed, target property gets changes as well. This only work for non reverse bindings.
+    //     */
+    //    @Test
+    //    public void changingTheRelayedPropertyWillAdjustTheTargetProperty() throws Throwable {
+    //
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //
+    //        a.bProperty().setValue(new B());
+    //        a.bProperty().getValue().xProperty().setValue(2L);
+    //
+    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    //    }
+    //
+    //    /**
+    //     * When the target property is already set and the observed property get set, the target property have the same value as the relayed property.
+    //     */
+    //    @Test
+    //    public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
+    //
+    //        x.setValue(2L);
+    //
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    //    }
+    //
+    //    /**
+    //     * When the relayed property get set and the observed property is already set, the target property have the same value as the relayed property.
+    //     */
+    //    @Test
+    //    public void whenTheRelayedPropertyChangesAndTheObservedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
+    //
+    //        a.bProperty().setValue(new B());
+    //
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().getValue().xProperty().setValue(2L);
     //
@@ -186,7 +200,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //        a.bProperty().setValue(new B());
     //        a.bProperty().getValue().xProperty().setValue(2L);
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //    }
@@ -199,7 +213,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //
     //        a.bProperty().setValue(new B());
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().getValue().xProperty().setValue(2L);
     //
@@ -219,28 +233,16 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //     */
     //    @Test
     //    public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
+    //        bind(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
-    //
-    //        bindBidirectional(a.bProperty(), B::xProperty, x, null);
-    //
-    //        x.setValue(2L);
+    //        a.bProperty().getValue().xProperty().setValue(20L);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //
-    //        a.bProperty().getValue().xProperty().setValue(10L);
-    //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //
+    //        a.bProperty().setValue(null);
+    //        x.setValue(10L);
     //        a.bProperty().setValue(new B());
-    //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //
-    //        x.setValue(20L);
-    //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //
-    //        a.bProperty().getValue().xProperty().setValue(10L);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //    }
@@ -250,11 +252,10 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //     */
     //    @Test
     //    public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-    //
-    //        bindBidirectional(a.bProperty(), B::xProperty, x, null);
+    //        bind(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
-    //        x.setValue(20L);
+    //        a.bProperty().getValue().xProperty().setValue(10L);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //
@@ -263,6 +264,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //        System.gc();
     //
     //        a.bProperty().setValue(new B());
+    //        a.bProperty().getValue().xProperty().setValue(10L);
     //        x = new SimpleObjectProperty<>();
     //        x.setValue(20L);
     //
@@ -279,7 +281,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //    @Test
     //    public void disposingTheBindingWillStopListeningForChangesOnTheObservedProperty() {
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        assertFalse(cut.getCurrentObservedValue().isPresent());
     //
@@ -300,7 +302,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //    @Test
     //    public void disposingTheBindingClearTheReferenceToTheTargetProperty() {
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
     //
@@ -317,7 +319,7 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //    @Test
     //    public void disposingTheBindingWillPreventTheRelayedPropertyToAffectTheTargetProperty() {
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
     //        a.bProperty().getValue().xProperty().setValue(2L);
@@ -332,35 +334,15 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //    }
     //
     //    /**
-    //     * When the binding is disposed, changes made to the target property will not affect the relayed property.
-    //     */
-    //    @Test
-    //    public void disposingTheBindingWillPreventTheTargetPropertyToAffectTheRelayedProperty() {
-    //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
-    //
-    //        a.bProperty().setValue(new B());
-    //        x.setValue(2L);
-    //
-    //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //
-    //        cut.dispose();
-    //
-    //        x.setValue(10L);
-    //
-    //        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    /**
     //     * When the target property is garbage collected, the binding will be disposed when a change event on the observed property occurs
     //     */
     //    @Test
     //    public void garbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
-    //        x.setValue(2L);
+    //        a.bProperty().getValue().xProperty().setValue(2L);
     //
     //        assertTrue(cut.getCurrentObservedValue().isPresent());
     //        assertNotNull(cut.getTarget());
@@ -381,10 +363,10 @@ public class FallbackBidirectionalStrategyIntegrationTest {
     //    @Test
     //    public void garbageCollectingTheObservedPropertyWillDisposeTheBinding() {
     //
-    //        cut = new FallbackBidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+    //        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
     //
     //        a.bProperty().setValue(new B());
-    //        x.setValue(2L);
+    //        a.bProperty().getValue().xProperty().setValue(2L);
     //
     //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     //        assertTrue(cut.getCurrentObservedValue().isPresent());

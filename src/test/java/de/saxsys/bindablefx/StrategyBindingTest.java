@@ -94,6 +94,18 @@ public class StrategyBindingTest {
         verify(strategy).computeValue(observableValue);
     }
 
+    /**
+     * When the binding is disposed, the strategy will also be disposed if it has been set.
+     */
+    @Test
+    public void disposingWillAlsoDisposeTheStrategyWhenItHasBeenSet() {
+
+        cut.setStrategy(strategy);
+
+        cut.dispose();
+
+        verify(strategy).dispose();
+    }
 
     // endregion
 }

@@ -87,6 +87,7 @@ public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValu
         final Property<TValue> target = getTarget();
         if (target != null) {
             unbind(target);
+            getTarget();
         }
     }
 

@@ -13,24 +13,18 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import de.saxsys.bindablefx.mocks.A;
-import de.saxsys.bindablefx.mocks.B;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Xyanid on 03.07.2016.
  */
 public class BidirectionalStrategyTest {
-
 
     // region Fields
 
@@ -45,6 +39,7 @@ public class BidirectionalStrategyTest {
     @Before
     public void setUp() {
         x = new SimpleObjectProperty<>();
+        cut = new BidirectionalStrategy<>(x);
     }
 
     // endregion
@@ -54,39 +49,37 @@ public class BidirectionalStrategyTest {
     //region Initialization
 
     /**
-     * Creating a bidirectional binding will allow for the desired property to be observed and the binding will be informed about changes.
+     * When the strategy is computed the new property, will be bound against the target.
      */
     @Test
     public void whenTheStrategyIsComputedTheNewPropertyWillBeBound() {
 
-        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(2L);
 
-        cut = new BidirectionalStrategy<>(x);
         cut.computeValue(newValue);
 
-        assertEquals(0L, x.get().longValue());
+        assertEquals(2L, x.get().longValue());
 
+        newValue.setValue(3L);
+
+        assertEquals(3L, x.get().longValue());
     }
 
     /**
-     * When a Binding is creates and the observed property is already set, the binding mechanism will be invoked and the target property will be bound against the relayed property.
+     * When the strategy is computed the old property, will be unbound.
      */
     @Test
-    public void creatingABindingWhenTheObservedPropertyIsAlreadySetWillBindTheTargetPropertyAgainstTheRelayedProperty() {
+    public void whenTheStrategyIsComputedTheOldPropertyWillBeUnbound() {
 
-        a.bProperty().setValue(new B());
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        cut.computeValue(newValue);
 
-        assertTrue(cut.getCurrentObservedValue().isPresent());
+        cut.computeValue(null);
 
-        cut.dispose();
+        newValue.setValue(3L);
 
-        a.bProperty().setValue(null);
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        assertFalse(cut.getCurrentObservedValue().isPresent());
+        assertEquals(0L, x.get().longValue());
     }
 
     //endregion
@@ -97,42 +90,30 @@ public class BidirectionalStrategyTest {
      * When the target property is changed after the observed property was changed, the relayed property will be changed as well.
      */
     @Test
-    public void changingTheTargetPropertyAfterTheObservedPropertyWillAdjustTheRelayedProperty() {
+    public void whenTheTargetIsChangedTheBoundPropertyWillAlsoBeChanged() {
 
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        a.bProperty().setValue(new B());
+        cut.computeValue(newValue);
+
         x.setValue(2L);
 
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        assertEquals(2L, newValue.get().longValue());
     }
 
     /**
      * When the target property is changed before the observed property is changed, the relayed property will be changed as well.
      */
     @Test
-    public void changingTheTargetPropertyBeforeTheObservedPropertyWillAdjustTheRelayedProperty() {
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+    public void changingTheTargetPropertyBeforeTheObservedPropertyWillAdjustTheTargetProperty() {
 
         x.setValue(2L);
-        a.bProperty().setValue(new B());
 
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-    /**
-     * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
-     */
-    @Test
-    public void whenTheTargetPropertyAndTheObservedPropertyAreAlreadySetTheRelayedPropertyWillHaveTheSameValue() {
+        cut.computeValue(newValue);
 
-        x.setValue(2L);
-        a.bProperty().setValue(new B());
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        assertEquals(0L, newValue.get().longValue());
     }
 
     /**
@@ -141,13 +122,13 @@ public class BidirectionalStrategyTest {
     @Test
     public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheRelayedPropertyWillHaveTheSameValue() {
 
-        x.setValue(2L);
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().setValue(new B());
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        //        x.setValue(2L);
+        //
+        //        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        //
+        //        a.bProperty().setValue(new B());
+        //
+        //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -156,13 +137,13 @@ public class BidirectionalStrategyTest {
     @Test
     public void whenTheTargetPropertyChangesAndTheObservedPropertyIsAlreadySetTheRelayedPropertyWillHaveTheSameValue() {
 
-        a.bProperty().setValue(new B());
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        x.setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        //        a.bProperty().setValue(new B());
+        //
+        //        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        //
+        //        x.setValue(2L);
+        //
+        //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -171,13 +152,13 @@ public class BidirectionalStrategyTest {
     @Test
     public void whenTheRelayedPropertyChangesTheTargetPropertyWillHaveTheSameValue() {
 
-        a.bProperty().setValue(new B());
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        //        a.bProperty().setValue(new B());
+        //
+        //        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        //
+        //        a.bProperty().getValue().xProperty().setValue(2L);
+        //
+        //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
@@ -186,130 +167,63 @@ public class BidirectionalStrategyTest {
     @Test
     public void whenTheRelayedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValue() {
 
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        //        a.bProperty().setValue(new B());
+        //        a.bProperty().getValue().xProperty().setValue(2L);
+        //
+        //        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        //
+        //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
      * When the relayed property is set to null and the binding is supposed to not set the target property to null, the target property will remain its old value.
      */
     @Test
-    public void whenTheBindingIsUnboundAndTheTargetPropertyShallNotBeResetTheTargetPropertyRemainItsOldValue() {
-
-        a.bProperty().setValue(new B());
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        a.bProperty().setValue(null);
-
-        assertEquals(2L, x.getValue().longValue());
+    public void whenTheStrategyIsDisposedTheTargetPropertyShallNotBeResetTheTargetPropertyRemainItsOldValue() {
+        //
+        //        a.bProperty().setValue(new B());
+        //
+        //        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        //
+        //        a.bProperty().getValue().xProperty().setValue(2L);
+        //
+        //        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        //
+        //        a.bProperty().setValue(null);
+        //
+        //        assertEquals(2L, x.getValue().longValue());
     }
 
     //endregion
 
-    // region No Strong Reference
+    // region Disposing
 
     /**
-     * Creating a binding without a strong reference will have the desired effect and the binding will remain until the observed property was made invalid.
+     * When the target property has no hard reference, the strategy will also no longer have a hard reference.
      */
     @Test
-    public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
-
-        a.bProperty().setValue(new B());
-
-        bindBidirectional(a.bProperty(), B::xProperty, x);
-
-        x.setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        a.bProperty().getValue().xProperty().setValue(10L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        a.bProperty().setValue(new B());
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        x.setValue(20L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        a.bProperty().getValue().xProperty().setValue(10L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    /**
-     * Creating a binding without a strong reference and garbage collecting the desired
-     */
-    @Test
-    public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-
-        bindBidirectional(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().setValue(new B());
-        x.setValue(20L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    public void whenTheTargetPropertyHasNoHardReferenceTheStrategyWillAlsoNoLongerHaveAReference() {
 
         x = null;
 
         System.gc();
 
-        a.bProperty().setValue(new B());
-        x = new SimpleObjectProperty<>();
-        x.setValue(20L);
-
-        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    // endregion
-
-    // region Disposing
-
-    /**
-     * When the binding is disposed, changes made to the observed property will no longer be listened to and the observed property will be unhooked.
-     */
-    @Test
-    public void disposingTheBindingWillStopListeningForChangesOnTheObservedProperty() {
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        assertFalse(cut.getCurrentObservedValue().isPresent());
-
-        a.bProperty().setValue(new B());
-
-        assertTrue(cut.getCurrentObservedValue().isPresent());
-
-        cut.dispose();
-
-        a.bProperty().setValue(new B());
-
-        assertFalse(cut.getCurrentObservedValue().isPresent());
+        assertNull(cut.getTarget());
     }
 
     /**
-     * When the binding is disposed, the reference to the target property is cleared.
+     * When the target property has no hard reference and was bound via the strategy, the strategy will also have no reference to it anymore.
      */
     @Test
-    public void disposingTheBindingClearTheReferenceToTheTargetProperty() {
+    public void whenTheTargetPropertyHasNoHardReferenceAndWasBoundTheStrategyWillAlsoNoLongerHaveAReference() {
 
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(2L);
 
-        a.bProperty().setValue(new B());
+        cut.computeValue(newValue);
 
-        assertNotNull(cut.getTarget());
+        x = null;
 
-        cut.dispose();
+        System.gc();
 
         assertNull(cut.getTarget());
     }
@@ -318,107 +232,37 @@ public class BidirectionalStrategyTest {
      * When the binding is disposed, changes made to the relayed property will not affect the target property.
      */
     @Test
-    public void disposingTheBindingWillPreventTheRelayedPropertyToAffectTheTargetProperty() {
+    public void disposingTheStrategyWillPreventThePropertyToAffectTheTargetProperty() {
 
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        cut.computeValue(newValue);
 
         cut.dispose();
 
-        a.bProperty().getValue().xProperty().setValue(10L);
+        newValue.setValue(3L);
 
-        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        assertEquals(0L, x.get().longValue());
     }
 
     /**
      * When the binding is disposed, changes made to the target property will not affect the relayed property.
      */
     @Test
-    public void disposingTheBindingWillPreventTheTargetPropertyToAffectTheRelayedProperty() {
+    public void disposingTheStrategyWillPreventTheTargetPropertyToAffectTheRelayedProperty() {
 
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        a.bProperty().setValue(new B());
-        x.setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+        cut.computeValue(newValue);
 
         cut.dispose();
 
-        x.setValue(10L);
+        x.setValue(3L);
 
-        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    /**
-     * When the target property is garbage collected, the binding will be disposed when a change event on the observed property occurs
-     */
-    @Test
-    public void garbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().setValue(new B());
-        x.setValue(2L);
-
-        assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTarget());
-
-        x = null;
-
-        System.gc();
-
-        a.bProperty().setValue(new B());
-
-        assertFalse(cut.getCurrentObservedValue().isPresent());
-        assertNull(cut.getTarget());
-    }
-
-    /**
-     * When the observed property is garbage collected, the binding will be disposed when the target property is changed.
-     */
-    @Test
-    public void garbageCollectingTheObservedPropertyWillDisposeTheBinding() {
-
-        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().setValue(new B());
-        x.setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-        assertTrue(cut.getCurrentObservedValue().isPresent());
-        assertNotNull(cut.getTarget());
-
-        a = null;
-
-        System.gc();
-
-        a = new A();
-        a.bProperty().setValue(new B());
-
-        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-        assertFalse(cut.getCurrentObservedValue().isPresent());
-        // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
-        //assertNull(TestUtil.getObservedValue(cut));
-        //assertNull(cut.getTarget());
+        assertEquals(0L, newValue.get().longValue());
     }
 
     // endregion
 
     // endregion
-
-
-    @Test
-    public void computeValue() {
-
-    }
-
-    @Test
-    public void dispose() {
-
-    }
 }

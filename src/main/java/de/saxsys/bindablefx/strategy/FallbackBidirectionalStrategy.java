@@ -25,7 +25,7 @@ public final class FallbackBidirectionalStrategy<TValue, TProperty extends Prope
     // region Fields
 
     /**
-     * This value wil be used when the relayed property is unbound.
+     * This is fallback value which will be used for the {@link #target} whenever it is unbound and the new {@link Property} is still null.
      */
     @Nullable
     private final TValue fallbackValue;
@@ -43,6 +43,11 @@ public final class FallbackBidirectionalStrategy<TValue, TProperty extends Prope
 
     // region Override BidirectionalBinding
 
+    /**
+     * Unbinds the {@link #target} from the {@link #oldValue} and sets the value of the {@link #target} using the {@link #fallbackValue}.
+     *
+     * @param target the current {@link #target}.
+     */
     @Override
     protected void unbind(@NotNull final TProperty target) {
         super.unbind(target);

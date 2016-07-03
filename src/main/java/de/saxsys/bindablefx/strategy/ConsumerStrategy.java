@@ -13,22 +13,31 @@
 
 package de.saxsys.bindablefx.strategy;
 
+import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 /**
+ * This strategy consumes the {@link #oldValue} and the new value.
+ *
  * @author xyanid on 30.03.2016.
  */
-public class ConsumerStrategy<TValue> extends OldValueStrategy<TValue, Void> {
+public class ConsumerStrategy<TValue> extends OldValueStrategy<ObservableValue<TValue>, Void> {
 
 
     //region Fields
 
+    /**
+     * The {@link Consumer} which consumes the {@link #oldValue}.
+     */
     @NotNull
     private final Consumer<TValue> previousValueConsumer;
 
+    /**
+     * The {@link Consumer} which is used for the new value.
+     */
     @NotNull
     private final Consumer<TValue> currentValueConsumer;
 
@@ -45,13 +54,21 @@ public class ConsumerStrategy<TValue> extends OldValueStrategy<TValue, Void> {
 
     // region private
 
+    /**
+     * Uses the {@link #previousValueConsumer} to consume the {@link #oldValue}.
+     */
     private void consumeOldValue() {
-        getOldValue().ifPresent(previousValueConsumer);
+        getOldValue().ifPresent(value -> previousValueConsumer.accept(value.getValue()));
     }
 
-    private void consumeValue(@Nullable final TValue value) {
+    /**
+     * Uses the {@link #currentValueConsumer} to consume the given value.
+     *
+     * @param value the value to consume.
+     */
+    private void consumeValue(@Nullable final ObservableValue<TValue> value) {
         if (value != null) {
-            currentValueConsumer.accept(value);
+            currentValueConsumer.accept(value.getValue());
             setOldValue(value);
         }
     }
@@ -60,13 +77,23 @@ public class ConsumerStrategy<TValue> extends OldValueStrategy<TValue, Void> {
 
     // region Override BaseBinding
 
+    /**
+     * Uses the {@link #previousValueConsumer} to consume the {@link #oldValue} and then uses the {@link #currentValueConsumer} to consume the new value.
+     *
+     * @param value the value to consume.
+     *
+     * @return null.
+     */
     @Override
-    public final Void computeValue(@Nullable final TValue value) {
+    public final Void computeValue(@Nullable final ObservableValue<TValue> value) {
         consumeOldValue();
         consumeValue(value);
         return null;
     }
 
+    /**
+     * Disposes this strategy and consumes the {@link #oldValue}.
+     */
     @Override
     public void dispose() {
         consumeOldValue();

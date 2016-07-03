@@ -17,6 +17,8 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Function;
+
 /**
  * Utility class to allow for the binding mechanisms in the lib to be used and is also the only point of entrance.
  *
@@ -36,20 +38,17 @@ public final class Bindings {
     // region Methods
 
     /**
-     * Creates a new {@link INestedBuilder} that listens to changes made to the given {@link ObservableValue} and then invokes its own binding mechanism.
+     * Creates a new {@link NestedBinding} that listens to changes made to the given {@link ObservableValue} and then invokes its own binding mechanism.
      *
-     * @param observedValue            the {@link ObservableValue} to listen to.
-     * @param <TValue>                 the type of the value of the {@link ObservableValue}
-     * @param <TObservedValue>         the type of the {@link ObservableValue}
-     * @param <TComputedValue>         the type of the value of the {@link Property} that is computed.
-     * @param <TComputedObservedValue> the type of the {@link Property} that is computed.
+     * @param observedValue    the {@link ObservableValue} to listen to.
+     * @param <TValue>         the type of the value of the {@link ObservableValue}
+     * @param <TComputedValue> the type of the value of the {@link Property} that is computed.
      *
-     * @return a new {@link INestedBuilder}.
+     * @return a new {@link NestedBinding}.
      */
-    public final <TValue, TObservedValue extends ObservableValue<TValue>, TComputedValue, TComputedObservedValue extends Property<TComputedValue>> NestedBinding<TValue,
-            TObservedValue, TComputedValue, TComputedObservedValue> observe(
-            @NotNull final TObservedValue observedValue) {
-        return new NestedBinding<TValue, TObservedValue, TComputedValue, TComputedObservedValue>().observe(observedValue);
+    public static <TValue, TComputedValue> NestedBinding<TValue, TComputedValue> observe(@NotNull final ObservableValue<TValue> observedValue,
+                                                                                         final @NotNull Function<TValue, ObservableValue<TComputedValue>> relayProvider) {
+        return new NestedBinding<TValue, TComputedValue>().observe(observedValue, relayProvider);
     }
 
     // endregion

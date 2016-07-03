@@ -13,23 +13,25 @@
 
 package de.saxsys.bindablefx;
 
-import de.saxsys.bindablefx.strategy.IComputeStrategy;
+import de.saxsys.bindablefx.strategy.IStrategy;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 /**
- * This binding executes the provided {@link IComputeStrategy}, whenever its {@link BaseBinding#observedValue} is changed.
+ * This binding executes the provided {@link IStrategy}, whenever its {@link BaseBinding#observedValue} is changed.
  *
  * @author xyanid on 30.03.2016.
  */
-final class StrategyBinding<TObservedValue extends ObservableValue, TComputedValue> extends BaseBinding<TObservedValue, TComputedValue> {
+public final class StrategyBinding<TObservedValue extends ObservableValue, TComputedValue> extends BaseBinding<TObservedValue, TComputedValue> {
 
     // region Fields
 
     /**
-     * This is the {@link IComputeStrategy} that will be invoked when the target
+     * This is the {@link IStrategy} that will be invoked when the target
      */
-    private IComputeStrategy<TObservedValue, TComputedValue> strategy;
+    private IStrategy<TObservedValue, TComputedValue> strategy;
 
     // endregion
 
@@ -42,11 +44,11 @@ final class StrategyBinding<TObservedValue extends ObservableValue, TComputedVal
     // region Setter
 
     /**
-     * sets
+     * Sets the {@link #strategy} and then forces the binding to recompute its value base on the new strategy.
      *
-     * @param strategy
+     * @param strategy the {@link IStrategy} to use.
      */
-    void setStrategy(@NotNull final IComputeStrategy<TObservedValue, TComputedValue> strategy) {
+    void setStrategy(final @NotNull IStrategy<TObservedValue, TComputedValue> strategy) {
         this.strategy = strategy;
         computeValue();
     }
@@ -55,15 +57,31 @@ final class StrategyBinding<TObservedValue extends ObservableValue, TComputedVal
 
     // region Override BaseBinding
 
+    /**
+     * Executes the current {@link #strategy} if it is know and returns its computed value or null if no strategy is known.
+     *
+     * @return the computed value of the {@link #strategy} or null.
+     */
     @Override
     protected final TComputedValue computeValue() {
-        return strategy.computeValue(getObservableValue().orElse(null));
+        if (strategy != null) {
+            final Optional<TObservedValue> observableValue = getObservableValue();
+            if (observableValue.isPresent()) {
+                strategy.computeValue(observableValue.get());
+            }
+        }
+        return null;
     }
 
+    /**
+     * Disposes this binding and also its {@link #strategy} if it is set.
+     */
     @Override
     public final void dispose() {
         super.dispose();
-        strategy.dispose();
+        if (strategy != null) {
+            strategy.dispose();
+        }
     }
 
     // endregion

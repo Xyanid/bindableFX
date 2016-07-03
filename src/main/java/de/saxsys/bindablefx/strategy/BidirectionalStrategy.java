@@ -18,13 +18,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * This strategy is used to bind the computed {@link Property} bidirectional against the {@link #target}.
+ *
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalStrategy<TValue, TProperty extends Property<TValue>> extends TargetStrategy<TProperty, TProperty, TProperty> {
+public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, Void, Property<TValue>> {
 
     // region Constructor
 
-    BidirectionalStrategy(@NotNull final TProperty target) {
+    BidirectionalStrategy(@NotNull final Property<TValue> target) {
         super(target);
 
     }
@@ -33,11 +35,22 @@ public class BidirectionalStrategy<TValue, TProperty extends Property<TValue>> e
 
     //region Protected
 
-    protected void unbind(@NotNull final TProperty target) {
+    /**
+     * Unbinds the {@link #oldValue} from the {@link #target}.
+     *
+     * @param target the current {@link #target}.
+     */
+    protected void unbind(@NotNull final Property<TValue> target) {
         getOldValue().ifPresent(target::unbindBidirectional);
     }
 
-    protected void bind(@Nullable final TProperty property, @NotNull final TProperty target) {
+    /**
+     * Bidirectional bind the {@link Property} against the {@link #target}.
+     *
+     * @param property the current {@link Property}.
+     * @param target   the {@link #target}.
+     */
+    protected void bind(@Nullable final Property<TValue> property, @NotNull final Property<TValue> target) {
         if (property != null) {
             target.bindBidirectional(property);
             setOldValue(property);
@@ -49,19 +62,29 @@ public class BidirectionalStrategy<TValue, TProperty extends Property<TValue>> e
 
     // region Override StrategyBinding
 
+    /**
+     * Unbinds the {@link #oldValue} and the binds the new computed {@link Property} bidirectional against the {@link #target}.
+     *
+     * @param property the {@link Property} that is being observed.
+     *
+     * @return null.
+     */
     @Override
-    public final TProperty computeValue(@Nullable final TProperty property) {
-        final TProperty target = getTarget();
+    public final Void computeValue(@Nullable final Property<TValue> property) {
+        final Property<TValue> target = getTarget();
         if (target != null) {
             unbind(target);
             bind(property, target);
         }
-        return property;
+        return null;
     }
 
+    /**
+     * Disposes this strategy and unbinds the {@link #target} from the {@link #oldValue}.
+     */
     @Override
     public final void dispose() {
-        final TProperty target = getTarget();
+        final Property<TValue> target = getTarget();
         if (target != null) {
             unbind(target);
         }

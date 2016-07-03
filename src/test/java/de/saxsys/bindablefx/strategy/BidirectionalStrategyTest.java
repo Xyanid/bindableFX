@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-package de.saxsys.bindablefx;
+package de.saxsys.bindablefx.strategy;
 
 import de.saxsys.bindablefx.mocks.A;
 import de.saxsys.bindablefx.mocks.B;
@@ -19,30 +19,24 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import static de.saxsys.bindablefx.Bindings.bindReverse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author xyanid on 31.03.2016.
+ * @author Xyanid on 03.07.2016.
  */
-@RunWith (MockitoJUnitRunner.class)
-public class ReverseUnidirectionalStrategyIntegrationTest {
+public class BidirectionalStrategyTest {
+
 
     // region Fields
 
-    private A a;
-
     private ObjectProperty<Long> x;
 
-    private ReverseUnidirectionalRelayBinding<B, Long> cut;
+    private BidirectionalStrategy<Long> cut;
 
     // endregion
 
@@ -50,7 +44,6 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
 
     @Before
     public void setUp() {
-        a = new A();
         x = new SimpleObjectProperty<>();
     }
 
@@ -64,30 +57,26 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
      * Creating a bidirectional binding will allow for the desired property to be observed and the binding will be informed about changes.
      */
     @Test
-    public void whenTheObservedPropertyIsChangedTheBindingWillBeInformed() throws Throwable {
+    public void whenTheStrategyIsComputedTheNewPropertyWillBeBound() {
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        assertFalse(cut.getCurrentObservedValue().isPresent());
+        cut = new BidirectionalStrategy<>(x);
+        cut.computeValue(newValue);
 
-        a.bProperty().setValue(new B());
+        assertEquals(0L, x.get().longValue());
 
-        assertTrue(cut.getCurrentObservedValue().isPresent());
-
-        a.bProperty().setValue(null);
-
-        assertFalse(cut.getCurrentObservedValue().isPresent());
     }
 
     /**
      * When a Binding is creates and the observed property is already set, the binding mechanism will be invoked and the target property will be bound against the relayed property.
      */
     @Test
-    public void creatingABindingWhenTheObservedPropertyIsAlreadySetWillBindTheTargetPropertyAgainstTheRelayedProperty() throws Throwable {
+    public void creatingABindingWhenTheObservedPropertyIsAlreadySetWillBindTheTargetPropertyAgainstTheRelayedProperty() {
 
         a.bProperty().setValue(new B());
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
 
@@ -95,14 +84,42 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(null);
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
     }
 
     //endregion
 
-    // region Changing Reverse Binding
+    //region Changing
+
+    /**
+     * When the target property is changed after the observed property was changed, the relayed property will be changed as well.
+     */
+    @Test
+    public void changingTheTargetPropertyAfterTheObservedPropertyWillAdjustTheRelayedProperty() {
+
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+
+        a.bProperty().setValue(new B());
+        x.setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    }
+
+    /**
+     * When the target property is changed before the observed property is changed, the relayed property will be changed as well.
+     */
+    @Test
+    public void changingTheTargetPropertyBeforeTheObservedPropertyWillAdjustTheRelayedProperty() {
+
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+
+        x.setValue(2L);
+        a.bProperty().setValue(new B());
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    }
 
     /**
      * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
@@ -113,50 +130,7 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
         x.setValue(2L);
         a.bProperty().setValue(new B());
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    /**
-     * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
-     */
-    @Test
-    public void whenTheTargetPropertyAndTheRelayedPropertyAreAlreadySetTheTargetPropertyWillBePreferred() {
-
-        x.setValue(2L);
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(10L);
-
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
-
-        assertEquals(2L, a.bProperty().getValue().xProperty().getValue().longValue());
-    }
-
-    /**
-     * When the relayed property is changed, target property gets changes as well. This only work for non reverse bindings.
-     */
-    @Test (expected = RuntimeException.class)
-    public void changingTheRelayedPropertyWillCauseAnException() throws Throwable {
-
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    /**
-     * When the relayed property is changed, target property gets changes as well. This only work for non reverse bindings.
-     */
-    @Test
-    public void changingTheTargetPropertyWillAdjustTheRelayedProperty() throws Throwable {
-
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
-
-        a.bProperty().setValue(new B());
-        x.setValue(20L);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -165,11 +139,11 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
      * When the target property is already set and the observed property get set, the relayed property have the same value as the target property.
      */
     @Test
-    public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheRelayedPropertyWillHaveTheSameValueAsTheTargetProperty() {
+    public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheRelayedPropertyWillHaveTheSameValue() {
 
         x.setValue(2L);
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
 
@@ -177,22 +151,69 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
     }
 
     /**
-     * When the relayed property is already set and the target property get set, the relayed property have the same value as the target property.
+     * When the target property get set and the observed property is already set, the relayed property have the same value as the target property.
      */
     @Test
-    public void whenTheRelayedPropertyIsAlreadySetAndTheTargetPropertyChangesTheRelayedPropertyWillHaveTheSameValueAsTheTargetProperty() {
+    public void whenTheTargetPropertyChangesAndTheObservedPropertyIsAlreadySetTheRelayedPropertyWillHaveTheSameValue() {
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(10L);
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         x.setValue(2L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
-    // endregion
+    /**
+     * When the relayed property changes the target property will have the same value
+     */
+    @Test
+    public void whenTheRelayedPropertyChangesTheTargetPropertyWillHaveTheSameValue() {
+
+        a.bProperty().setValue(new B());
+
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+
+        a.bProperty().getValue().xProperty().setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    }
+
+    /**
+     * When the relayed property is already set, the target property will have the same value
+     */
+    @Test
+    public void whenTheRelayedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValue() {
+
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
+
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    }
+
+    /**
+     * When the relayed property is set to null and the binding is supposed to not set the target property to null, the target property will remain its old value.
+     */
+    @Test
+    public void whenTheBindingIsUnboundAndTheTargetPropertyShallNotBeResetTheTargetPropertyRemainItsOldValue() {
+
+        a.bProperty().setValue(new B());
+
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+
+        a.bProperty().getValue().xProperty().setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
+        a.bProperty().setValue(null);
+
+        assertEquals(2L, x.getValue().longValue());
+    }
+
+    //endregion
 
     // region No Strong Reference
 
@@ -201,16 +222,28 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
-        bindReverse(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
+
+        bindBidirectional(a.bProperty(), B::xProperty, x);
+
+        x.setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
+        a.bProperty().getValue().xProperty().setValue(10L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
+        a.bProperty().setValue(new B());
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
         x.setValue(20L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
-        a.bProperty().setValue(null);
-        x.setValue(10L);
-        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(10L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -220,14 +253,14 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-        bindReverse(a.bProperty(), B::xProperty, x);
+
+        bindBidirectional(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         x.setValue(20L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
-        a.bProperty().setValue(null);
         x = null;
 
         System.gc();
@@ -249,7 +282,7 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingWillStopListeningForChangesOnTheObservedProperty() {
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
@@ -270,7 +303,7 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingClearTheReferenceToTheTargetProperty() {
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
 
@@ -282,12 +315,32 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
     }
 
     /**
+     * When the binding is disposed, changes made to the relayed property will not affect the target property.
+     */
+    @Test
+    public void disposingTheBindingWillPreventTheRelayedPropertyToAffectTheTargetProperty() {
+
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
+
+        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
+
+        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+
+        cut.dispose();
+
+        a.bProperty().getValue().xProperty().setValue(10L);
+
+        assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
+    }
+
+    /**
      * When the binding is disposed, changes made to the target property will not affect the relayed property.
      */
     @Test
     public void disposingTheBindingWillPreventTheTargetPropertyToAffectTheRelayedProperty() {
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);
@@ -307,7 +360,7 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
     @Test
     public void garbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);
@@ -315,7 +368,6 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
         assertTrue(cut.getCurrentObservedValue().isPresent());
         assertNotNull(cut.getTarget());
 
-        a.bProperty().setValue(null);
         x = null;
 
         System.gc();
@@ -332,7 +384,7 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
     @Test
     public void garbageCollectingTheObservedPropertyWillDisposeTheBinding() {
 
-        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
+        cut = new BidirectionalStrategy<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
         x.setValue(2L);
@@ -351,11 +403,22 @@ public class ReverseUnidirectionalStrategyIntegrationTest {
         assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
-        //assertNull(TestUtil.getObservedProperty(cut));
+        //assertNull(TestUtil.getObservedValue(cut));
         //assertNull(cut.getTarget());
     }
 
     // endregion
 
     // endregion
+
+
+    @Test
+    public void computeValue() {
+
+    }
+
+    @Test
+    public void dispose() {
+
+    }
 }

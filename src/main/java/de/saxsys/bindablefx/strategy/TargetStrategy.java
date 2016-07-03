@@ -19,12 +19,18 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 
 /**
+ * This strategy provides the ability to store a target value which can be used during computation of the result. The target is only weakly referenced so the strategy does not
+ * prevent it from being garbage collected.
+ *
  * @author Xyanid on 18.06.2016.
  */
 public abstract class TargetStrategy<TValue, TComputedValue, TTarget> extends OldValueStrategy<TValue, TComputedValue> {
 
     // region Fields
 
+    /**
+     * The target which is to be used.
+     */
     @NotNull
     private final WeakReference<TTarget> target;
 

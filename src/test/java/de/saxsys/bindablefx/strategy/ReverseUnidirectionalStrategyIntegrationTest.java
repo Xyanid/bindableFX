@@ -11,11 +11,10 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-package de.saxsys.bindablefx;
+package de.saxsys.bindablefx.strategy;
 
 import de.saxsys.bindablefx.mocks.A;
 import de.saxsys.bindablefx.mocks.B;
-import de.saxsys.bindablefx.strategy.ResettableUnidirectionalStrategy;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import org.junit.Before;
@@ -23,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static de.saxsys.bindablefx.Bindings.bind;
+import static de.saxsys.bindablefx.Bindings.bindReverse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -35,7 +34,7 @@ import static org.junit.Assert.assertTrue;
  * @author xyanid on 31.03.2016.
  */
 @RunWith (MockitoJUnitRunner.class)
-public class ResettableUnidirectionalStrategyIntegrationTest {
+public class ReverseUnidirectionalStrategyIntegrationTest {
 
     // region Fields
 
@@ -43,7 +42,7 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
 
     private ObjectProperty<Long> x;
 
-    private ResettableUnidirectionalStrategy<B, Long> cut;
+    private ReverseUnidirectionalRelayBinding<B, Long> cut;
 
     // endregion
 
@@ -67,7 +66,7 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     @Test
     public void whenTheObservedPropertyIsChangedTheBindingWillBeInformed() throws Throwable {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
@@ -88,7 +87,7 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(new B());
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
 
@@ -96,25 +95,25 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
 
         a.bProperty().setValue(null);
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
     }
 
     //endregion
 
-    //region Changing
+    // region Changing Reverse Binding
 
     /**
      * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
      */
     @Test
-    public void whenTheTargetPropertyAndTheObservedPropertyAreAlreadySetTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
+    public void whenTheTargetPropertyAndTheObservedPropertyAreAlreadySetTheRelayedPropertyWillHaveTheSameValue() {
 
         x.setValue(2L);
         a.bProperty().setValue(new B());
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -123,41 +122,27 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
      * When the target property and the observed property are set before the binding is created, the relayed property have the same value as the target property.
      */
     @Test
-    public void whenTheTargetPropertyAndTheRelayedPropertyAreAlreadySetTheRelayedPropertyWillBePreferred() {
+    public void whenTheTargetPropertyAndTheRelayedPropertyAreAlreadySetTheTargetPropertyWillBePreferred() {
 
         x.setValue(2L);
         a.bProperty().setValue(new B());
         a.bProperty().getValue().xProperty().setValue(10L);
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        assertEquals(10L, x.getValue().longValue());
+        assertEquals(2L, a.bProperty().getValue().xProperty().getValue().longValue());
     }
 
     /**
-     * When the target property is changed after the observed property is changed, an exception will be thrown because it is already bound and hence can not be changed.
+     * When the relayed property is changed, target property gets changes as well. This only work for non reverse bindings.
      */
     @Test (expected = RuntimeException.class)
-    public void changingTheTargetPropertyAfterTheObservedPropertyWillThrowAnException() {
+    public void changingTheRelayedPropertyWillCauseAnException() throws Throwable {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        x.setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    /**
-     * When the target property is changed before the observed property is changed, no exception will be thrown because the target property is not yet bound.
-     */
-    @Test
-    public void changingTheTargetPropertyBeforeTheObservedPropertyWillNotThrowAnException() {
-
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
-
-        x.setValue(2L);
-        a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(2L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -166,25 +151,25 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
      * When the relayed property is changed, target property gets changes as well. This only work for non reverse bindings.
      */
     @Test
-    public void changingTheRelayedPropertyWillAdjustTheTargetProperty() throws Throwable {
+    public void changingTheTargetPropertyWillAdjustTheRelayedProperty() throws Throwable {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
+        x.setValue(20L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
-     * When the target property is already set and the observed property get set, the target property have the same value as the relayed property.
+     * When the target property is already set and the observed property get set, the relayed property have the same value as the target property.
      */
     @Test
-    public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
+    public void whenTheTargetPropertyIsAlreadySetAndTheObservedPropertyChangesTheRelayedPropertyWillHaveTheSameValueAsTheTargetProperty() {
 
         x.setValue(2L);
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
 
@@ -192,54 +177,22 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     }
 
     /**
-     * When the relayed property get set and the observed property is already set, the target property have the same value as the relayed property.
+     * When the relayed property is already set and the target property get set, the relayed property have the same value as the target property.
      */
     @Test
-    public void whenTheRelayedPropertyChangesAndTheObservedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValueAsTheRelayedProperty() {
+    public void whenTheRelayedPropertyIsAlreadySetAndTheTargetPropertyChangesTheRelayedPropertyWillHaveTheSameValueAsTheTargetProperty() {
 
         a.bProperty().setValue(new B());
+        a.bProperty().getValue().xProperty().setValue(10L);
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
-        a.bProperty().getValue().xProperty().setValue(2L);
+        x.setValue(2L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
 
-    /**
-     * When the relayed property is already set, the target property will have the same value
-     */
-    @Test
-    public void whenTheRelayedPropertyIsAlreadySetTheTargetPropertyWillHaveTheSameValue() {
-
-        a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-    }
-
-    /**
-     * When the relayed property is set to null and the binding is supposed to set the target property to null, the target property will be null.
-     */
-    @Test
-    public void whenTheBindingIsUnboundAndTheTargetPropertyWillBeSetToTheResetValue() {
-
-        a.bProperty().setValue(new B());
-
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
-
-        a.bProperty().getValue().xProperty().setValue(2L);
-
-        assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
-
-        a.bProperty().setValue(null);
-
-        assertNull(x.getValue());
-    }
-
-    //endregion
+    // endregion
 
     // region No Strong Reference
 
@@ -248,10 +201,10 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceWillCreateTheDesiredEffect() {
-        bind(a.bProperty(), B::xProperty, x, null);
+        bindReverse(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(20L);
+        x.setValue(20L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
@@ -267,19 +220,19 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
      */
     @Test
     public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
-        bind(a.bProperty(), B::xProperty, x, null);
+        bindReverse(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(10L);
+        x.setValue(20L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
+        a.bProperty().setValue(null);
         x = null;
 
         System.gc();
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(10L);
         x = new SimpleObjectProperty<>();
         x.setValue(20L);
 
@@ -296,7 +249,7 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingWillStopListeningForChangesOnTheObservedProperty() {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         assertFalse(cut.getCurrentObservedValue().isPresent());
 
@@ -317,7 +270,7 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     @Test
     public void disposingTheBindingClearTheReferenceToTheTargetProperty() {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
 
@@ -329,21 +282,21 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     }
 
     /**
-     * When the binding is disposed, changes made to the relayed property will not affect the target property.
+     * When the binding is disposed, changes made to the target property will not affect the relayed property.
      */
     @Test
-    public void disposingTheBindingWillPreventTheRelayedPropertyToAffectTheTargetProperty() {
+    public void disposingTheBindingWillPreventTheTargetPropertyToAffectTheRelayedProperty() {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
+        x.setValue(2L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
 
         cut.dispose();
 
-        a.bProperty().getValue().xProperty().setValue(10L);
+        x.setValue(10L);
 
         assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
     }
@@ -354,14 +307,15 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     @Test
     public void garbageCollectingTheTargetPropertyWillDisposeTheBindingWhenTheObservedPropertyChanges() {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
+        x.setValue(2L);
 
         assertTrue(cut.getCurrentObservedValue().isPresent());
         assertNotNull(cut.getTarget());
 
+        a.bProperty().setValue(null);
         x = null;
 
         System.gc();
@@ -378,10 +332,10 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
     @Test
     public void garbageCollectingTheObservedPropertyWillDisposeTheBinding() {
 
-        cut = new ResettableUnidirectionalStrategy<>(a.bProperty(), B::xProperty, x, null);
+        cut = new ReverseUnidirectionalRelayBinding<>(a.bProperty(), B::xProperty, x);
 
         a.bProperty().setValue(new B());
-        a.bProperty().getValue().xProperty().setValue(2L);
+        x.setValue(2L);
 
         assertEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertTrue(cut.getCurrentObservedValue().isPresent());
@@ -397,7 +351,7 @@ public class ResettableUnidirectionalStrategyIntegrationTest {
         assertNotEquals(x.getValue(), a.bProperty().getValue().xProperty().getValue());
         assertFalse(cut.getCurrentObservedValue().isPresent());
         // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
-        //assertNull(TestUtil.getObservedProperty(cut));
+        //assertNull(TestUtil.getObservedValue(cut));
         //assertNull(cut.getTarget());
     }
 

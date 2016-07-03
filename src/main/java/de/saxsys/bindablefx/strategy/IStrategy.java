@@ -20,9 +20,18 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Xyanid on 18.06.2016.
  */
-public interface IComputeStrategy<TValue, TComputedValue> {
+public interface IStrategy<TValue, TComputedValue> {
 
+    /**
+     * This will use the given value and provide a computed value which is based on it. This method will be called by the
+     * {@link de.saxsys.bindablefx.StrategyBinding#computeValue()} method, whenever its {@link de.saxsys.bindablefx.StrategyBinding#observedValue} was set.
+     *
+     * @param value the value that will be used.
+     */
     TComputedValue computeValue(@Nullable final TValue value);
 
+    /**
+     * Disposes this strategy, allowing for clean up of the strategy. This method will be called by the {@link de.saxsys.bindablefx.StrategyBinding#dispose()} method.
+     */
     void dispose();
 }

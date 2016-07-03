@@ -20,20 +20,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 /**
+ * This strategy can be used to provide a fallback value, if the current value shall for some reason not be used or to be altered.
+ *
  * @author xyanid on 30.03.2016.
  */
-public class FallbackStrategy<TValue, TObservedValue extends ObservableValue<TValue>> implements IComputeStrategy<TObservedValue, TValue> {
+public class FallbackStrategy<TValue> implements IStrategy<ObservableValue<TValue>, TValue> {
 
     // region Fields
 
+    /**
+     * This {@link Function} is to be used when the new value is know shall be returned.
+     */
     @NotNull
-    private final Function<TValue, TValue> resolver;
+    private final Function<ObservableValue<TValue>, TValue> resolver;
 
     // endregion
 
     // region Constructor
 
-    public FallbackStrategy(@NotNull final Function<TValue, TValue> resolver) {
+    public FallbackStrategy(@NotNull final Function<ObservableValue<TValue>, TValue> resolver) {
         this.resolver = resolver;
     }
 
@@ -41,15 +46,21 @@ public class FallbackStrategy<TValue, TObservedValue extends ObservableValue<TVa
 
     // region Override RelayBinding
 
+    /**
+     * Calls the {@link #resolver} to determine the actual value to use.
+     *
+     * @param observableValue the current {@link ObservableValue}.
+     *
+     * @return null or the value provided by the {@link #resolver}.
+     */
     @Override
-    public final TValue computeValue(@Nullable final TObservedValue observableValue) {
-        if (observableValue != null) {
-            return resolver.apply(observableValue.getValue());
-        }
-
-        return null;
+    public final TValue computeValue(@Nullable final ObservableValue<TValue> observableValue) {
+        return resolver.apply(observableValue);
     }
 
+    /**
+     * Disposes this strategy but does actually nothing.
+     */
     @Override
     public void dispose() {}
 

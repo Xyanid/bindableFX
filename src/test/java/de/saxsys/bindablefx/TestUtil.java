@@ -13,7 +13,7 @@
 
 package de.saxsys.bindablefx;
 
-import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.lang.ref.WeakReference;
@@ -32,20 +32,12 @@ final class TestUtil {
 
     // region Methods
 
-    /**
-     *
-     */
-    static BaseBinding getChild(final NestedBinding binding) {
-        return (BaseBinding) Whitebox.getInternalState(binding, "child");
+    static <TBaseBinding extends BaseBinding> TBaseBinding getChild(final NestedBinding binding) {
+        return (TBaseBinding) Whitebox.getInternalState(binding, "child");
     }
 
-    /**
-     *
-     */
-    static WeakReference<Property> getObservedProperty(final BaseBinding binding) {
-        return (WeakReference<Property>) Whitebox.getInternalState(binding, "observedProperty");
-
-        EasyBind.
+    static WeakReference<ObservableValue> getObservedValue(final BaseBinding binding) {
+        return (WeakReference<ObservableValue>) Whitebox.getInternalState(binding, "observedValue");
     }
 
     // endregion

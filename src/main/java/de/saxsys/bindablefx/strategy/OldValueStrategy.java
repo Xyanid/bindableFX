@@ -20,12 +20,18 @@ import java.lang.ref.WeakReference;
 import java.util.Optional;
 
 /**
+ * This strategy allows for the new value that is used in the {@link IStrategy#computeValue(Object)} method to be saved and used when a new value gets computed. The old
+ * value will be weakly referenced.
+ *
  * @author Xyanid on 18.06.2016.
  */
-public abstract class OldValueStrategy<TValue, TComputedValue> implements IComputeStrategy<TValue, TComputedValue> {
+public abstract class OldValueStrategy<TValue, TComputedValue> implements IStrategy<TValue, TComputedValue> {
 
     // region Fields
 
+    /**
+     * The weak reference to the old value.
+     */
     @Nullable
     private WeakReference<TValue> oldValue;
 
@@ -33,6 +39,11 @@ public abstract class OldValueStrategy<TValue, TComputedValue> implements ICompu
 
     //region Getter/Setter
 
+    /**
+     * Get the {@link #oldValue}.
+     *
+     * @return the {@link #oldValue}.
+     */
     public Optional<TValue> getOldValue() {
         if (oldValue != null) {
             return Optional.ofNullable(oldValue.get());
@@ -40,6 +51,11 @@ public abstract class OldValueStrategy<TValue, TComputedValue> implements ICompu
         return Optional.empty();
     }
 
+    /**
+     * Sets the {@link #oldValue}
+     *
+     * @param oldValue the value to be used.
+     */
     public void setOldValue(@NotNull final TValue oldValue) {
         this.oldValue = new WeakReference<>(oldValue);
     }

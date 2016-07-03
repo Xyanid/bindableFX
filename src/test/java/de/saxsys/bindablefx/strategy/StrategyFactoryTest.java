@@ -11,15 +11,37 @@
  * See the License for the specific language governing permissions and limitations under the License.
  */
 
-package de.saxsys.bindablefx;
+package de.saxsys.bindablefx.strategy;
 
-import java.util.function.Function;
+import org.junit.Test;
 
 /**
- * This is a simple extension of the already existing {@link Function}, to that the {@link INestedBuilder#thenObserve(InitialFunction)} and
- * {@link INestedBuilder#thenObserve(Function)} can have the same name.
- *
- * @author Xyanid on 26.06.2016.
+ * @author Xyanid on 03.07.2016.
  */
-@FunctionalInterface
-public interface InitialFunction<T, R> extends Function<T, R> {}
+public class StrategyFactoryTest {
+    @Test
+    public void createConsumerStrategy() throws Exception {
+
+    }
+
+    @Test
+    public void createFallbackStrategy() throws Exception {
+
+    }
+
+    @Test
+    public void createUnidirectionalStrategy() throws Exception {
+
+    }
+
+    @Test
+    public void createBidirectionalStrategy() throws Exception {
+
+    }
+
+    @Test
+    public void createFallbackBidirectionalStrategy() throws Exception {
+
+    }
+
+}

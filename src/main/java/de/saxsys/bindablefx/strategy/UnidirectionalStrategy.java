@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author xyanid on 30.03.2016.
  */
-public class UnidirectionalStrategy<TValue, TProperty extends Property<TValue>> extends TargetStrategy<TProperty, Void, ObservableValue<TValue>> {
+public class UnidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, ObservableValue<TValue>> {
 
     // region Constructor
 
@@ -47,7 +47,7 @@ public class UnidirectionalStrategy<TValue, TProperty extends Property<TValue>> 
      *
      * @param property the new {@link Property} of this strategy.
      */
-    private void bind(@Nullable final TProperty property) {
+    private void bind(@Nullable final Property<TValue> property) {
         if (property != null) {
             final ObservableValue<TValue> target = getTarget();
             if (target != null) {
@@ -65,14 +65,11 @@ public class UnidirectionalStrategy<TValue, TProperty extends Property<TValue>> 
      * Unbinds the {@link #oldValue} and binds the new {@link Property} against the {@link #target}.
      *
      * @param property the new {@link Property} of this strategy.
-     *
-     * @return null.
      */
     @Override
-    public final Void computeValue(@Nullable final TProperty property) {
+    public final void onValueChanged(@Nullable final Property<TValue> property) {
         unbind();
         bind(property);
-        return null;
     }
 
     /**

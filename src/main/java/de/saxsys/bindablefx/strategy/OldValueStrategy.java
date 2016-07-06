@@ -20,12 +20,12 @@ import java.lang.ref.WeakReference;
 import java.util.Optional;
 
 /**
- * This strategy allows for the new value that is used in the {@link IStrategy#computeValue(Object)} method to be saved and used when a new value gets computed. The old
+ * This strategy allows for the new value that is used in the {@link IStrategy#onValueChanged(Object)} method to be saved and used when a new value gets computed. The old
  * value will be weakly referenced.
  *
  * @author Xyanid on 18.06.2016.
  */
-public abstract class OldValueStrategy<TValue, TComputedValue> implements IStrategy<TValue, TComputedValue> {
+public abstract class OldValueStrategy<TValue> implements IStrategy<TValue> {
 
     // region Fields
 

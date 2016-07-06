@@ -24,7 +24,7 @@ import java.util.function.Function;
  *
  * @author xyanid on 30.03.2016.
  */
-public class FallbackStrategy<TValue> implements IStrategy<ObservableValue<TValue>, TValue> {
+public class FallbackStrategy<TValue> implements IStrategy<ObservableValue<TValue>> {
 
     // region Fields
 
@@ -50,12 +50,10 @@ public class FallbackStrategy<TValue> implements IStrategy<ObservableValue<TValu
      * Calls the {@link #resolver} to determine the actual value to use.
      *
      * @param observableValue the current {@link ObservableValue}.
-     *
-     * @return null or the value provided by the {@link #resolver}.
      */
     @Override
-    public final TValue computeValue(@Nullable final ObservableValue<TValue> observableValue) {
-        return resolver.apply(observableValue);
+    public final void onValueChanged(@Nullable final ObservableValue<TValue> observableValue) {
+        //return resolver.apply(observableValue);
     }
 
     /**

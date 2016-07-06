@@ -32,12 +32,12 @@ final class TestUtil {
 
     // region Methods
 
-    static <TBaseBinding extends BaseBinding> TBaseBinding getChild(final NestedBinding binding) {
-        return (TBaseBinding) Whitebox.getInternalState(binding, "child");
+    static <TBaseBinding extends NestedBinding> TBaseBinding getChild(final NestedBinding listener) {
+        return (TBaseBinding) Whitebox.getInternalState(listener, "child");
     }
 
-    static WeakReference<ObservableValue> getObservedValue(final BaseBinding binding) {
-        return (WeakReference<ObservableValue>) Whitebox.getInternalState(binding, "observedValue");
+    static WeakReference<ObservableValue> getObservedValue(final NestedBinding listner) {
+        return (WeakReference<ObservableValue>) Whitebox.getInternalState(listner, "observedValue");
     }
 
     // endregion

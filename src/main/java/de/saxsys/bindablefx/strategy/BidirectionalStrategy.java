@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author xyanid on 30.03.2016.
  */
-public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, Void, Property<TValue>> {
+public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValue>, Property<TValue>> {
 
     // region Constructor
 
@@ -60,23 +60,20 @@ public class BidirectionalStrategy<TValue> extends TargetStrategy<Property<TValu
 
     //endregion
 
-    // region Override StrategyBinding
+    // region Strategy Handling
 
     /**
      * Unbinds the {@link #oldValue} and the binds the new computed {@link Property} bidirectional against the {@link #target}.
      *
      * @param property the {@link Property} that is being observed.
-     *
-     * @return null.
      */
     @Override
-    public final Void computeValue(@Nullable final Property<TValue> property) {
+    public void onValueChanged(Property<TValue> property) {
         final Property<TValue> target = getTarget();
         if (target != null) {
             unbind(target);
             bind(property, target);
         }
-        return null;
     }
 
     /**

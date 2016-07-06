@@ -13,7 +13,6 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +23,7 @@ import java.util.function.Consumer;
  *
  * @author xyanid on 30.03.2016.
  */
-public class ConsumerStrategy<TValue> extends OldValueStrategy<ObservableValue<TValue>, Void> {
+public class ConsumerStrategy<TValue> extends OldValueStrategy<TValue> {
 
 
     //region Fields
@@ -58,7 +57,7 @@ public class ConsumerStrategy<TValue> extends OldValueStrategy<ObservableValue<T
      * Uses the {@link #previousValueConsumer} to consume the {@link #oldValue}.
      */
     private void consumeOldValue() {
-        getOldValue().ifPresent(value -> previousValueConsumer.accept(value.getValue()));
+        getOldValue().ifPresent(previousValueConsumer);
     }
 
     /**
@@ -66,29 +65,26 @@ public class ConsumerStrategy<TValue> extends OldValueStrategy<ObservableValue<T
      *
      * @param value the value to consume.
      */
-    private void consumeValue(@Nullable final ObservableValue<TValue> value) {
+    private void consumeValue(@Nullable final TValue value) {
         if (value != null) {
-            currentValueConsumer.accept(value.getValue());
+            currentValueConsumer.accept(value);
             setOldValue(value);
         }
     }
 
     // endregion
 
-    // region Override BaseBinding
+    // region Strategy Handling
 
     /**
      * Uses the {@link #previousValueConsumer} to consume the {@link #oldValue} and then uses the {@link #currentValueConsumer} to consume the new value.
      *
      * @param value the value to consume.
-     *
-     * @return null.
      */
     @Override
-    public final Void computeValue(@Nullable final ObservableValue<TValue> value) {
+    public final void onValueChanged(@Nullable final TValue value) {
         consumeOldValue();
         consumeValue(value);
-        return null;
     }
 
     /**

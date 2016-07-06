@@ -24,7 +24,7 @@ import java.lang.ref.WeakReference;
  *
  * @author Xyanid on 18.06.2016.
  */
-public abstract class TargetStrategy<TValue, TComputedValue, TTarget> extends OldValueStrategy<TValue, TComputedValue> {
+public abstract class TargetStrategy<TValue, TTarget> extends OldValueStrategy<TValue> {
 
     // region Fields
 

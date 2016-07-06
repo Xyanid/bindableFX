@@ -47,8 +47,10 @@ public final class Bindings {
      * @return a new {@link NestedBinding}.
      */
     public static <TValue, TComputedValue> NestedBinding<TValue, TComputedValue> observe(@NotNull final ObservableValue<TValue> observedValue,
-                                                                                         final @NotNull Function<TValue, ObservableValue<TComputedValue>> relayProvider) {
-        return new NestedBinding<TValue, TComputedValue>().observe(observedValue, relayProvider);
+                                                                                         @NotNull final Function<TValue, ObservableValue<TComputedValue>> relayProvider) {
+        final NestedBinding<TValue, TComputedValue> result = new NestedBinding<>(relayProvider);
+        result.setObservedValue(observedValue);
+        return result;
     }
 
     // endregion

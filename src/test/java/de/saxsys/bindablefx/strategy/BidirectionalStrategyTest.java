@@ -56,7 +56,7 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(2L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
         assertEquals(2L, x.get().longValue());
 
@@ -73,9 +73,9 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
-        cut.computeValue(null);
+        cut.onValueChanged(null);
 
         newValue.setValue(3L);
 
@@ -94,7 +94,7 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
         x.setValue(2L);
 
@@ -111,7 +111,7 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
         assertEquals(0L, newValue.get().longValue());
     }
@@ -219,7 +219,7 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(2L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
         x = null;
 
@@ -236,7 +236,7 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
         cut.dispose();
 
@@ -253,7 +253,7 @@ public class BidirectionalStrategyTest {
 
         final ObjectProperty<Long> newValue = new SimpleObjectProperty<>(0L);
 
-        cut.computeValue(newValue);
+        cut.onValueChanged(newValue);
 
         cut.dispose();
 

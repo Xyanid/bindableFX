@@ -14,7 +14,6 @@
 package de.saxsys.bindablefx;
 
 import de.saxsys.bindablefx.strategy.IStrategy;
-import de.saxsys.bindablefx.strategy.StrategyFactory;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +52,7 @@ import java.util.function.Supplier;
  *
  * @author xyanid on 30.03.2016.
  */
-public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, ObservableValue<TComputedValue>> {
+public class NestedBinding<TValue, TRelayedValue> extends BaseBinding<TValue> {
 
     // region Fields
 
@@ -61,94 +60,72 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      * The child binding held by this cascaded binding.
      */
     @Nullable
-    private BaseBinding child;
+    private BaseBinding<TValue> child;
+
+    @NotNull
+    private final Function<TValue, ObservableValue<TRelayedValue>> relayResolver;
 
     // endregion
 
     // region Constructor
 
-    NestedBinding() {}
+    NestedBinding(@NotNull final Function<TValue, ObservableValue<TRelayedValue>> relayResolver) {
+        this.relayResolver = relayResolver;
+    }
 
     // endregion
 
-    // region Child Binding
+    // region Strategy or Child
 
     /**
      */
     private void disposeChild() {
         if (child != null) {
             child.dispose();
+            child = null;
         }
     }
 
     /**
-     * Disposes the current {@link #child} and recreates a new {@link TBaseBinding} using the given {@link Supplier}.
+     * Disposes the current {@link #child} or {@link #strategy} and recreates a new {@link NestedBinding} using the given {@link Supplier}.
      *
-     * @param <TBaseBinding> the type of the desired new child.
+     * @param <TBaseBinding> the type of the desired new {@link #child}.
      *
-     * @return a new {@link TBaseBinding} which as been set as the new {@link #child}.
+     * @return a new {@link NestedBinding} which as been set as the new {@link #child}.
      */
-    @NotNull <TBaseBinding extends BaseBinding> TBaseBinding createChild(@NotNull final TBaseBinding binding) {
+    @NotNull
+    private <TBaseBinding extends BaseBinding<TValue>> TBaseBinding createChild(@NotNull final TBaseBinding child) {
         disposeChild();
 
-        child = binding;
+        this.child = child;
 
-        computeValue();
+        changed(getObservedValue().orElse(null), null, getValue());
 
-        return binding;
+        return child;
     }
 
     // endregion
 
-    // region Override BaseBinding
+    // region Change Handling
 
     /**
-     * Computes the nested {@link Property} which is provided by the current {@link #observedValue}. If the {@link #child} has been set, then the {@link Property} will also be
-     * relayed to the child.
+     * When the property was set to something valid, we will use the provided {@link #relayResolver} to get another property which we will listen to
      *
-     * @return the {@link Property} which is relayed by the {@link #relayResolver} or null if either the {@link #relayResolver} or {@link #observedValue} is null.
-     */
-    @SuppressWarnings ("unchecked")
-    @Override
-    public final ObservableValue<TComputedValue> computeValue() {
-
-        final ObservableValue<TComputedValue> computedValue = super.computeValue();
-
-        if (child != null) {
-            child.destroyObservedValue();
-            if (computedValue != null) {
-                child.setObservedValue(computedValue);
-            }
-        }
-
-        return computedValue;
-    }
-
-    /**
-     * {@inheritDoc}. This implementation also disposes the child if it is available.
+     * @param observable the observable value to use
+     * @param oldValue   the old value.
+     * @param newValue   the new value.
      */
     @Override
-    public void dispose() {
-        super.dispose();
-        disposeChild();
-        child = null;
+    public final void changed(@Nullable final ObservableValue<? extends TValue> observable, @Nullable final TValue oldValue, @Nullable final TValue newValue) {
+
     }
 
-    // endregion
+    //endregion
 
     // region Public
 
-    /**
-     * Starts observing the given {@link ObservableValue} and computed the desired {@link ObservableValue} via the provided relay provider.
-     *
-     * @param observedValue the {@link ObservableValue} to observe.
-     * @param relayProvider the {@link Function} to be used when the observed value is set and next {@link ObservableValue} is needed.
-     *
-     * @return this binding.
-     */
-    NestedBinding<TValue, TComputedValue> observe(@NotNull final ObservableValue<TValue> observedValue, @NotNull final Function<TValue, ObservableValue<TComputedValue>> relayProvider) {
-        setObservedValue(observedValue);
-        setRelayResolver(relayProvider);
+    public BaseBinding<TValue> observe(@NotNull final ObservableValue<TValue> observableValue) {
+        setObservedValue(observableValue);
         return this;
     }
 
@@ -156,17 +133,15 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      * Starts observing the {@link Property} that is provided by the {@link Function} as soon as this bindings {@link #observedValue} has been set. Note that a call to this
      * method will dispose the previous {@link #child}.
      *
-     * @param relayProvider          the {@link Function} used to get the next {@link Property} to observe for the {@link #child}.
-     * @param <TNestedComputedValue> the type of the nested computed value of the {@link #child}.
+     * @param relayProvider         the {@link Function} used to get the next {@link Property} to observe for the {@link #child}.
+     * @param <TNestedRelayedValue> the type of the nested computed value of the {@link #child}.
      *
      * @return this bindings {@link #child}, which is a new {@link NestedBinding}.
      *
      * @see NestedBinding
      */
-    public <TNestedComputedValue> NestedBinding<TComputedValue, TNestedComputedValue> thenObserve(@NotNull final Function<TComputedValue, ObservableValue<TNestedComputedValue>> relayProvider) {
-        final NestedBinding<TComputedValue, TNestedComputedValue> result = createChild(new NestedBinding<TComputedValue, TNestedComputedValue>());
-        result.setRelayResolver(relayProvider);
-        return result;
+    public <TNestedRelayedValue> NestedBinding<TRelayedValue, TNestedRelayedValue> thenObserve(@NotNull final Function<TRelayedValue, ObservableValue<TNestedRelayedValue>> relayProvider) {
+        return createChild(new NestedBinding<>(relayProvider));
     }
 
     /**
@@ -180,16 +155,13 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      * @param previousValueConsumer the {@link Consumer} to be called when the previous {@link Property} is consumed.
      * @param currentValueConsumer  the {@link Consumer} to be called when the new {@link Property} is consumed.
      *
-     * @return this bindings {@link #child}, which also a new {@link StrategyBinding} using a {@link de.saxsys.bindablefx.strategy.ConsumerStrategy}.
+     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.ConsumerStrategy}.
      *
      * @see de.saxsys.bindablefx.strategy.ConsumerStrategy
      */
-    public StrategyBinding<ObservableValue<TComputedValue>, Void> thenConsume(final @NotNull Consumer<TComputedValue> previousValueConsumer,
-                                                                              final @NotNull Consumer<TComputedValue> currentValueConsumer) {
-        final StrategyBinding<ObservableValue<TComputedValue>, Void> result = createChild(new StrategyBinding<ObservableValue<TComputedValue>, Void>());
-        final IStrategy<ObservableValue<TComputedValue>, Void> strategy = StrategyFactory.createConsumerStrategy(previousValueConsumer, currentValueConsumer);
-        result.setStrategy(strategy);
-        return result;
+    public NestedBinding<TValue, TRelayedValue> thenConsumeValue(final @NotNull Consumer<TRelayedValue> previousValueConsumer, final @NotNull Consumer<TRelayedValue> currentValueConsumer) {
+
+        return this;
     }
 
     /**
@@ -198,15 +170,12 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      *
      * @param resolver the {@link Function} to be called when this bindings {@link Property} has been computed and shall be used by the child.
      *
-     * @return this bindings {@link #child}, which also a new {@link StrategyBinding} using a {@link de.saxsys.bindablefx.strategy.FallbackStrategy}.
+     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.FallbackStrategy}.
      *
      * @see de.saxsys.bindablefx.strategy.FallbackStrategy
      */
-    public StrategyBinding<ObservableValue<TComputedValue>, TComputedValue> thenFallbackOn(@NotNull final Function<ObservableValue<TComputedValue>, TComputedValue> resolver) {
-        final StrategyBinding<ObservableValue<TComputedValue>, TComputedValue> result = createChild(new StrategyBinding<ObservableValue<TComputedValue>, TComputedValue>());
-        final IStrategy<ObservableValue<TComputedValue>, TComputedValue> strategy = StrategyFactory.createFallbackStrategy(resolver);
-        result.setStrategy(strategy);
-        return result;
+    public NestedBinding<TValue, TRelayedValue> thenFallbackOn(@NotNull final Function<ObservableValue<TRelayedValue>, TRelayedValue> resolver) {
+        return this;
     }
 
     /**
@@ -215,15 +184,12 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      *
      * @param target the {@link ObservableValue} against which the computed {@link Property} of this binding will be bound.
      *
-     * @return this bindings {@link #child}, which also a new {@link StrategyBinding} using a {@link de.saxsys.bindablefx.strategy.UnidirectionalStrategy}.
+     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.UnidirectionalStrategy}.
      *
      * @see de.saxsys.bindablefx.strategy.UnidirectionalStrategy
      */
-    public StrategyBinding<Property<TComputedValue>, Void> thenBind(@NotNull final ObservableValue<TComputedValue> target) {
-        final StrategyBinding<Property<TComputedValue>, Void> result = createChild(new StrategyBinding<Property<TComputedValue>, Void>());
-        final IStrategy<Property<TComputedValue>, Void> strategy = StrategyFactory.createUnidirectionalStrategy(target);
-        result.setStrategy(strategy);
-        return result;
+    public NestedBinding<TValue, TRelayedValue> thenBind(@NotNull final ObservableValue<TRelayedValue> target) {
+        return this;
     }
 
     /**
@@ -232,15 +198,12 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      *
      * @param target the {@link Property} against which the computed {@link Property} of this binding will be bound.
      *
-     * @return this bindings {@link #child}, which also a new {@link StrategyBinding} using a {@link de.saxsys.bindablefx.strategy.BidirectionalStrategy}.
+     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.BidirectionalStrategy}.
      *
      * @see de.saxsys.bindablefx.strategy.BidirectionalStrategy
      */
-    public StrategyBinding<Property<TComputedValue>, Void> thenBindBidirectional(@NotNull final Property<TComputedValue> target) {
-        final StrategyBinding<Property<TComputedValue>, Void> result = createChild(new StrategyBinding<Property<TComputedValue>, Void>());
-        final IStrategy<Property<TComputedValue>, Void> strategy = StrategyFactory.createBidirectionalStrategy(target);
-        result.setStrategy(strategy);
-        return result;
+    public NestedBinding<TValue, TRelayedValue> thenBindBidirectional(@NotNull final Property<TRelayedValue> target) {
+        return this;
     }
 
     /**
@@ -249,17 +212,12 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      *
      * @param target the {@link Property} against which the computed {@link Property} of this binding will be bound.
      *
-     * @return this bindings {@link #child}, which also a new {@link StrategyBinding} using a {@link de.saxsys.bindablefx.strategy.FallbackBidirectionalStrategy}.
+     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.FallbackBidirectionalStrategy}.
      *
      * @see de.saxsys.bindablefx.strategy.FallbackBidirectionalStrategy
      */
-    public StrategyBinding<Property<TComputedValue>, Void> thenBindBidirectionalOrFallbackOn(@NotNull final Property<TComputedValue> target, @Nullable final TComputedValue fallbackValue) {
-
-
-        final StrategyBinding<Property<TComputedValue>, Void> result = createChild(new StrategyBinding<Property<TComputedValue>, Void>());
-        final IStrategy<Property<TComputedValue>, Void> strategy = StrategyFactory.createFallbackBidirectionalStrategy(target, fallbackValue);
-        result.setStrategy(strategy);
-        return result;
+    public NestedBinding<TValue, TRelayedValue> thenBindBidirectionalOrFallbackOn(@NotNull final Property<TRelayedValue> target, @Nullable final TRelayedValue fallbackValue) {
+        return this;
     }
 
     /**
@@ -268,16 +226,23 @@ public class NestedBinding<TValue, TComputedValue> extends RelayBinding<TValue, 
      *
      * @param strategy the {@link IStrategy} to be used when the computed {@link Property} changes.
      *
-     * @return this bindings {@link #child}, which also a new {@link StrategyBinding}.
+     * @return this bindings {@link #child}, which also a new {@link StrategyListener}.
      *
      * @see IStrategy
      */
-    public <TComputedStrategyValue> StrategyBinding<ObservableValue<TComputedValue>, TComputedStrategyValue> thenUseStrategy(final @NotNull IStrategy<ObservableValue<TComputedValue>,
-            TComputedStrategyValue> strategy) {
-        final StrategyBinding<ObservableValue<TComputedValue>, TComputedStrategyValue> result = createChild(new StrategyBinding<ObservableValue<TComputedValue>, TComputedStrategyValue>());
-        result.setStrategy(strategy);
-        return result;
+    public NestedBinding<TValue, TRelayedValue> thenUseStrategy(final @NotNull IStrategy<ObservableValue<TRelayedValue>> strategy) {
+        return this;
     }
+
+    /**
+     * {@inheritDoc}. This implementation also disposes the child if it is available.
+     */
+    public void dispose() {
+        destroyObservedValue();
+        disposeChild();
+        disposeStrategy();
+    }
+
 
     // endregion
 }

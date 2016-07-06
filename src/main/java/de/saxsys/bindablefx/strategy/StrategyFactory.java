@@ -45,7 +45,7 @@ public final class StrategyFactory {
      *
      * @return a new {@link ConsumerStrategy}.
      */
-    public static <TValue> IStrategy<ObservableValue<TValue>, Void> createConsumerStrategy(@NotNull final Consumer<TValue> previousConsumer, @NotNull final Consumer<TValue> previousObjectConsumer) {
+    public static <TValue> IStrategy<TValue> createConsumerStrategy(@NotNull final Consumer<TValue> previousConsumer, @NotNull final Consumer<TValue> previousObjectConsumer) {
         return new ConsumerStrategy<>(previousConsumer, previousObjectConsumer);
     }
 
@@ -57,7 +57,7 @@ public final class StrategyFactory {
      *
      * @return a new {@link FallbackStrategy}.
      */
-    public static <TValue> IStrategy<ObservableValue<TValue>, TValue> createFallbackStrategy(@NotNull final Function<ObservableValue<TValue>, TValue> resolver) {
+    public static <TValue> IStrategy<ObservableValue<TValue>> createFallbackStrategy(@NotNull final Function<ObservableValue<TValue>, TValue> resolver) {
         return new FallbackStrategy<>(resolver);
     }
 
@@ -69,7 +69,7 @@ public final class StrategyFactory {
      *
      * @return a new {@link UnidirectionalStrategy}.
      */
-    public static <TValue, TProperty extends Property<TValue>> IStrategy<TProperty, Void> createUnidirectionalStrategy(@NotNull final ObservableValue<TValue> target) {
+    public static <TValue> IStrategy<Property<TValue>> createUnidirectionalStrategy(@NotNull final ObservableValue<TValue> target) {
         return new UnidirectionalStrategy<>(target);
     }
 
@@ -81,7 +81,7 @@ public final class StrategyFactory {
      *
      * @return a new {@link BidirectionalStrategy}.
      */
-    public static <TValue> IStrategy<Property<TValue>, Void> createBidirectionalStrategy(@NotNull final Property<TValue> target) {
+    public static <TValue> IStrategy<Property<TValue>> createBidirectionalStrategy(@NotNull final Property<TValue> target) {
         return new BidirectionalStrategy<>(target);
     }
 
@@ -94,7 +94,7 @@ public final class StrategyFactory {
      *
      * @return a new {@link FallbackBidirectionalStrategy}.
      */
-    public static <TValue> IStrategy<Property<TValue>, Void> createFallbackBidirectionalStrategy(@NotNull final Property<TValue> targetProperty, @Nullable final TValue fallbackValue) {
+    public static <TValue> IStrategy<Property<TValue>> createFallbackBidirectionalStrategy(@NotNull final Property<TValue> targetProperty, @Nullable final TValue fallbackValue) {
         return new FallbackBidirectionalStrategy<>(targetProperty, fallbackValue);
     }
 

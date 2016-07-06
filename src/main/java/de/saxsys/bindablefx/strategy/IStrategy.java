@@ -13,25 +13,22 @@
 
 package de.saxsys.bindablefx.strategy;
 
-import org.jetbrains.annotations.Nullable;
-
 /**
- * This interface is used to determine the actual value of any binding.
+ * This interface is used to determine who changed values are to be used.
  *
  * @author Xyanid on 18.06.2016.
  */
-public interface IStrategy<TValue, TComputedValue> {
+public interface IStrategy<TValue> {
 
     /**
-     * This will use the given value and provide a computed value which is based on it. This method will be called by the
-     * {@link de.saxsys.bindablefx.StrategyBinding#computeValue()} method, whenever its {@link de.saxsys.bindablefx.StrategyBinding#observedValue} was set.
+     * Will be called when the value was changed
      *
-     * @param value the value that will be used.
+     * @param value newValue
      */
-    TComputedValue computeValue(@Nullable final TValue value);
+    void onValueChanged(final TValue value);
 
     /**
-     * Disposes this strategy, allowing for clean up of the strategy. This method will be called by the {@link de.saxsys.bindablefx.StrategyBinding#dispose()} method.
+     * Disposes this strategy.
      */
     void dispose();
 }

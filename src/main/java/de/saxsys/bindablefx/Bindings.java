@@ -38,19 +38,62 @@ public final class Bindings {
     // region Methods
 
     /**
-     * Creates a new {@link NestedBinding} that listens to changes made to the given {@link ObservableValue} and then invokes its own binding mechanism.
+     * Creates a new {@link RootBinding} that listens to changes made to the given {@link ObservableValue} and then invokes its own binding mechanism.
      *
-     * @param observedValue    the {@link ObservableValue} to listen to.
-     * @param <TValue>         the type of the value of the {@link ObservableValue}
-     * @param <TComputedValue> the type of the value of the {@link Property} that is computed.
+     * @param observedValue the {@link ObservableValue} to listen to.
+     * @param <TValue>      the type of the value of the {@link ObservableValue}
      *
-     * @return a new {@link NestedBinding}.
+     * @return a new {@link RootBinding}.
      */
-    public static <TValue, TComputedValue> NestedBinding<TValue, TComputedValue> observe(@NotNull final ObservableValue<TValue> observedValue,
-                                                                                         @NotNull final Function<TValue, ObservableValue<TComputedValue>> relayProvider) {
-        final NestedBinding<TValue, TComputedValue> result = new NestedBinding<>(relayProvider);
+    public static <TValue> IFluentBinding<TValue> observe(@NotNull final ObservableValue<TValue> observedValue) {
+        final RootBinding<TValue> result = new RootBinding<>();
         result.setObservedValue(observedValue);
         return result;
+    }
+
+    /**
+     * Creates
+     *
+     * @param observableValue
+     * @param converter
+     * @param <TValue>
+     * @param <TConvertedValue>
+     *
+     * @return
+     */
+    public static <TValue, TConvertedValue> IFluentBinding<TConvertedValue> convert(@NotNull final ObservableValue<TValue> observableValue,
+                                                                                    @NotNull final Function<TValue, TConvertedValue> converter) {
+        return new ConverterBinding<>(observableValue, converter);
+    }
+
+    /**
+     * Binds the given property1 bidirectional against the property2, the values will be converted using the given {@link IConverter}.
+     *
+     * @param property1         the first {@link Property} to be bind.
+     * @param property2         the second {@link Property} to be bind.
+     * @param converter         the {@link IConverter} to use.
+     * @param <TValue>          the type of the first {@link Property}.
+     * @param <TConvertedValue> the type of the second {@link Property}.
+     */
+    public static <TValue, TConvertedValue> BidirectionalBinding<Object> bindBidirectional(@NotNull final Property<TValue> property1,
+                                                                                           @NotNull final Property<TConvertedValue> property2,
+                                                                                           @NotNull final IConverter<TValue, TConvertedValue> converter) {
+        return BidirectionalBinding.bind(property1, property2, converter);
+    }
+
+    /**
+     * Unbinds the given property1 bidirectional from property2.
+     * <p>
+     * NOTE: this method is incompatible with the {@link com.sun.javafx.binding.BidirectionalBinding}, so calling this unbind will not destroy any
+     * {@link com.sun.javafx.binding.BidirectionalBinding} but only the {@link BidirectionalBinding}.
+     *
+     * @param property1         the first {@link Property} to be unbound.
+     * @param property2         the second {@link Property} to be unbound.
+     * @param <TValue>          the type of the first {@link Property}.
+     * @param <TConvertedValue> the type of the second {@link Property}.
+     */
+    public static <TValue, TConvertedValue> void unbindBidirectional(@NotNull final Property<TValue> property1, @NotNull final Property<TConvertedValue> property2) {
+        BidirectionalBinding.unbind(property1, property2);
     }
 
     // endregion

@@ -69,7 +69,7 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
 
     // endregion
 
-    // region Override WeakChangeListener
+    // region Override WeakListener
 
     @Override
     public boolean wasGarbageCollected() {

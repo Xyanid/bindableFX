@@ -82,23 +82,6 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
         return Optional.ofNullable(observedValue.get());
     }
 
-    /**
-     * Returns the current value of the {@link #observedValue}.
-     *
-     * @return {@link Optional#empty()} if the {@link #observedValue} is null or an {@link Optional} of the current value of the {@link #observedValue}.
-     */
-    @Override
-    public TValue getValue() {
-
-        final Optional<ObservableValue<TValue>> observedValue = getObservedValue();
-
-        if (observedValue.isPresent()) {
-            return observedValue.get().getValue();
-        } else {
-            return this.fallbackValue;
-        }
-    }
-
     // endregion
 
     // region Observed value
@@ -156,7 +139,13 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
      */
     @Override
     protected TValue computeValue() {
-        return getValue();
+        final Optional<ObservableValue<TValue>> observedValue = getObservedValue();
+
+        if (observedValue.isPresent()) {
+            return observedValue.get().getValue();
+        } else {
+            return this.fallbackValue;
+        }
     }
 
     /**

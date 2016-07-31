@@ -63,13 +63,13 @@ class ConverterBinding<TValue, TConvertedValue> extends RootBinding<TConvertedVa
      * @return {@link Optional#empty()} if the {@link #observedValue} is null or an {@link Optional} of the current value of the {@link #observedValue}.
      */
     @Override
-    public TConvertedValue getValue() {
+    protected TConvertedValue computeValue() {
         final ObservableValue<TValue> observedValue = parent.get();
 
         if (observedValue != null) {
             return converter.apply(observedValue.getValue());
         } else {
-            return super.getValue();
+            return super.computeValue();
         }
     }
 

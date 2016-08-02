@@ -13,49 +13,132 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.WeakListener;
+import javafx.beans.binding.Binding;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * This interface allows for fluent api calls when binding {@link ObservableValue} or {@link Property}.
  *
  * @author Xyanid on 29.07.2016.
  */
-public interface IFluentBinding<TValue> extends ObservableValue<TValue> {
+public interface IFluentBinding<TValue> extends Binding<TValue>, WeakListener {
 
     /**
-     * Sets a fallback value that will be returned if the underlying {@link ObservableValue} is not yet set and therefor null.
+     * Sets a fallback value that will be returned if the underlying {@link ObservableValue} is not yet set.
      *
-     * @param value the value to fallback on.
-     *
-     * @return this {@link IFluentBinding}.
-     */
-    IFluentBinding<TValue> fallbackOn(final TValue value);
-
-    /**
-     * Attaches the given {@link ChangeListener} as a {@link javafx.beans.value.WeakChangeListener} to this binding, so it does not block elements referenced in the {@link ChangeListener} to be
-     * cleaned up.
-     *
-     * @param changeListener the {@link ChangeListener} to use.
+     * @param fallbackValue the value to fallback on.
      *
      * @return this {@link IFluentBinding}.
      *
-     * @see #stopWaitingForChange().
+     * @see #stopFallbackOn()
+     * @see #hasFallbackValue()
      */
-    IFluentBinding<TValue> waitForChange(final ChangeListener<TValue> changeListener);
+    @NotNull IFluentBinding<TValue> fallbackOn(@Nullable final TValue fallbackValue);
 
     /**
-     * Removes the {@link ChangeListener} that has been attached via the {@link #waitForChange(ChangeListener)} from this binding.
+     * Removes the fallback value, so that null will be returned instead of the fallback value.
      *
      * @return this {@link IFluentBinding}.
      *
-     * @see #waitForChange(ChangeListener)
+     * @see #fallbackOn(Object)
+     * @see #hasFallbackValue()
      */
-    IFluentBinding<TValue> stopWaitingForChange();
+    @NotNull IFluentBinding<TValue> stopFallbackOn();
+
+    /**
+     * Determines if the binding has as fallback value.
+     *
+     * @return true if the binding has a fallback value, otherwise false.
+     *
+     * @see #fallbackOn(Object)
+     * @see #stopFallbackOn()
+     */
+    boolean hasFallbackValue();
+
+    /**
+     * Fallback on the given fallback value if the value of the underlying {@link ObservableValue} computes to true using the given {@link Predicate}.
+     *
+     * @param fallbackTriggerValue determine when the value of the underlying {@link ObservableValue} will be replaced with the given fallback value.
+     * @param fallbackValue        the value to fallback on.
+     *
+     * @return this {@link IFluentBinding}.
+     *
+     * @see #replaceWith(Function)
+     * @see #stopReplacement()
+     * @see #hasReplacement()
+     */
+    @NotNull
+    default IFluentBinding<TValue> replaceWith(@NotNull final Predicate<TValue> fallbackTriggerValue, @Nullable final TValue fallbackValue) {
+        return replaceWith(value -> fallbackTriggerValue.test(value) ? fallbackValue : value);
+    }
+
+    /**
+     * Applies the given {@link Function} whenever the underlying {@link ObservableValue} is changed, allowing for certain values to be replaced or ignored. In order to stop this behaviour a call
+     * to {@link #stopReplacement()} is required. A call to this method should overwrite previous call, so only the last applied behaviour is used.
+     *
+     * @param valueReplacer the {@link Function} which decided if the value of the underlying {@link ObservableValue} will be replaced with the fallback value.
+     *
+     * @return this {@link IFluentBinding}.
+     *
+     * @see #replaceWith(Predicate, Object)
+     * @see #stopReplacement()
+     * @see #stopReplacement()
+     * @see #hasReplacement()
+     */
+    @NotNull IFluentBinding<TValue> replaceWith(@Nullable final Function<TValue, TValue> valueReplacer);
+
+    /**
+     * Stops replacing the value of the underlying {@link ObservableValue}.
+     *
+     * @return this {@link IFluentBinding}.
+     *
+     * @see #replaceWith(Function)
+     * @see #replaceWith(Predicate, Object)
+     * @see #hasReplacement()
+     */
+    @NotNull IFluentBinding<TValue> stopReplacement();
+
+    /**
+     * Determines if the binding has a replacement.
+     *
+     * @return true if the binding has a replacement, otherwise false.
+     *
+     * @see #replaceWith(Predicate, Object)
+     * @see #replaceWith(Function)
+     * @see #stopReplacement()
+     */
+    boolean hasReplacement();
+
+    /**
+     * Removes all the {@link ChangeListener} and {@link InvalidationListener} that have been attached to this binding.
+     *
+     * @return this {@link IFluentBinding}.
+     *
+     * @see #addListener(ChangeListener)
+     * @see #addListener(InvalidationListener)
+     * @see #hasListeners()
+     */
+    @NotNull IFluentBinding<TValue> stopListeners();
+
+    /**
+     * Determines if this binding has any {@link ChangeListener} or {@link InvalidationListener} attached to it.
+     *
+     * @return true if the binding has any {@link ChangeListener} or {@link InvalidationListener} attached to it, otherwise false.
+     *
+     * @see #stopListeners()
+     * @see #addListener(ChangeListener)
+     * @see #addListener(InvalidationListener)
+     */
+    boolean hasListeners();
 
     /**
      * Creates a new {@link IFluentBinding} that converts the value of this {@link IFluentBinding} into another type.
@@ -67,6 +150,7 @@ public interface IFluentBinding<TValue> extends ObservableValue<TValue> {
      *
      * @see ConverterBinding
      */
+    @NotNull
     default <TConvertedValue> IFluentBinding<TConvertedValue> convertTo(@NotNull final Function<TValue, TConvertedValue> converter) {
         return new ConverterBinding<>(this, converter);
     }
@@ -82,6 +166,7 @@ public interface IFluentBinding<TValue> extends ObservableValue<TValue> {
      *
      * @see RelayBinding
      */
+    @NotNull
     default <TRelayedValue, TRelayedObservedValue extends ObservableValue<TRelayedValue>> IFluentBinding<TRelayedValue> thenObserve(
             @NotNull final Function<TValue, TRelayedObservedValue> relayResolver) {
         return new RelayBinding<>(this, relayResolver);
@@ -98,6 +183,7 @@ public interface IFluentBinding<TValue> extends ObservableValue<TValue> {
      *
      * @see PropertyBinding
      */
+    @NotNull
     default <TRelayedValue, TRelayedProperty extends Property<TRelayedValue>> IPropertyBinding<TRelayedValue> thenObserveProperty(@NotNull final Function<TValue, TRelayedProperty> relayResolver) {
         return new PropertyBinding<>(this, relayResolver);
     }

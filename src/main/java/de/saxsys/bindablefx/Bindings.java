@@ -48,6 +48,7 @@ public final class Bindings {
     public static <TValue> IFluentBinding<TValue> observe(@NotNull final ObservableValue<TValue> observedValue) {
         final RootBinding<TValue> result = new RootBinding<>();
         result.setObservedValue(observedValue);
+        result.invalidate();
         return result;
     }
 

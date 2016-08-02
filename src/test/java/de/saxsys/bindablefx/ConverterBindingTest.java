@@ -23,7 +23,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static de.saxsys.bindablefx.TestUtil.getParent;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -60,7 +61,7 @@ public class ConverterBindingTest {
     @Test
     public void aConverterBindingCanBeCreated() {
         assertThat(cut, instanceOf(ConverterBinding.class));
-        assertEquals(x, getParent(cut).get());
+        assertSame(x, getParent(cut).get());
     }
 
     /**
@@ -72,16 +73,14 @@ public class ConverterBindingTest {
     }
 
     /**
-     *
+     * When the {@link javafx.beans.value.ObservableValue} is changed, the binding will be invalidated and the value will be converted.
      */
     @Test
     public void whenTheObservedValueIsChangedTheBindingWillBeInvalidated() {
-        x.setValue(null);
-
+        x.setValue(1L);
         assertEquals("1", cut.getValue());
 
         x.setValue(null);
-
         assertEquals("", cut.getValue());
     }
 
@@ -92,14 +91,13 @@ public class ConverterBindingTest {
     public void whenTheObservedValueIsDisposedTheBindingWillNoLongerWork() {
         x = new SimpleObjectProperty<>();
 
-        x.setValue(1L);
-
         System.gc();
 
-        assertNull(getParent(cut).get());
-        assertEquals("", cut.getValue());
-    }
+        x.setValue(1L);
 
+        assertNotSame(x, getParent(cut).get());
+        assertEquals(null, cut.getValue());
+    }
 
     // endregion
 }

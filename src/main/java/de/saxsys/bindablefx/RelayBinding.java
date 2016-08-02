@@ -13,10 +13,11 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.function.Function;
 
 /**
@@ -52,33 +53,54 @@ public class RelayBinding<TParentValue, TValue, TObservedValue extends Observabl
 
     // region Fields
 
+    /**
+     * The {@link Function} which will be used to get the desired {@link ObservableValue} based on the current value of the parent.
+     */
     @NotNull
     private final Function<TParentValue, TObservedValue> relayResolver;
+
+    /**
+     * The current parent that is used in this binding.
+     */
+    @NotNull
+    private final WeakReference<ObservableValue<TParentValue>> parent;
+
+    /**
+     * The {@link ChangeListener} that is attached to the parent.
+     */
+    @NotNull
+    private final ChangeListener<TParentValue> onParentChanged;
 
     // endregion
 
     // region Constructor
 
-    RelayBinding(final @NotNull ObservableValue<TParentValue> parent, @NotNull final Function<TParentValue, TObservedValue> relayResolver) {
+    RelayBinding(@NotNull final ObservableValue<TParentValue> parent, @NotNull final Function<TParentValue, TObservedValue> relayResolver) {
         this.relayResolver = relayResolver;
-        parent.addListener(this::parentChanged);
+        this.onParentChanged = (observable, oldValue, newValue) -> {
+            destroyObservedValue();
+            if (newValue != null) {
+                setObservedValue(relayResolver.apply(newValue));
+            }
+            invalidate();
+        };
+        this.parent = new WeakReference<>(parent);
+        parent.addListener(this.onParentChanged);
+        onParentChanged.changed(parent, null, parent.getValue());
     }
 
     // endregion
 
-    // region Change Handling
+    // region Override RootBinding
 
-    /**
-     * Will be called when the value of the parent has propertyChanged, providing a new nested {@link ObservableValue} for this binding.
-     *
-     * @param observable the observable value to use.
-     * @param oldValue   the old value.
-     * @param newValue   the new value.
-     */
-    private void parentChanged(@Nullable final ObservableValue<? extends TParentValue> observable, @Nullable final TParentValue oldValue, @Nullable final TParentValue newValue) {
-        destroyObservedValue();
-        setObservedValue(relayResolver.apply(newValue));
+    @Override
+    public void dispose() {
+        super.dispose();
+        final ObservableValue<TParentValue> parent = this.parent.get();
+        if (parent != null) {
+            parent.removeListener(onParentChanged);
+        }
     }
 
-    //endregion
+    // endregion
 }

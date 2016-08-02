@@ -13,23 +13,29 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.WeakListener;
 import javafx.beans.binding.ObjectBinding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.beans.value.WeakChangeListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
- * This class is the root of all binding implementations in this library. It consists of a {@link WeakReference} to the {@link ObservableValue} that is being watched and a {@link #fallbackValue}.
- * It also contains a convenient {@link WeakChangeListener}, so its possible to subscribe to changes of this binding.
+ * This class is the root of all binding implementations in this library. It only weakly references the {@link ObservableValue} that it is bound to and therefor does not prevent it from being
+ * garbage collected. It also allows for values of the
  *
  * @param <TValue> the type of the {@link #observedValue} that is being watched.
  */
+@SuppressWarnings ("OptionalUsedAsFieldOrParameterType")
 class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBinding<TValue>, ChangeListener<TValue>, WeakListener {
 
     // region Fields
@@ -42,21 +48,34 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
     private WeakReference<ObservableValue<TValue>> observedValue;
 
     /**
-     * The value to use when the {@link #observedValue} has not yet been set and ist still null.
+     * The value that indicates whether the trigger value will be used or not.
+     *
+     * @see #replaceWith(Function)
+     * @see #replaceWith(Predicate, Object)
+     * @see #stopReplacement()
+     */
+    @Nullable
+    private Function<TValue, TValue> valueReplacer;
+
+    /**
+     * The value to fallback on if the {@link #observedValue} has not yet been set.
      *
      * @see #fallbackOn(Object)
      */
     @Nullable
-    private TValue fallbackValue;
+    private Supplier<TValue> fallbackSupplier;
 
     /**
-     * The current {@link WeakChangeListener} that was added.
-     *
-     * @see #waitForChange(ChangeListener)
-     * @see #stopWaitingForChange()
+     * The list of {@link ChangeListener}s added to this binding.
      */
-    @Nullable
-    private WeakChangeListener<TValue> changeListener;
+    @NotNull
+    private final List<ChangeListener<? super TValue>> changeListeners = new ArrayList<>();
+
+    /**
+     * The list of {@link InvalidationListener}s added to this binding.
+     */
+    @NotNull
+    private final List<InvalidationListener> invalidationListeners = new ArrayList<>();
 
     // endregion
 
@@ -95,7 +114,6 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
             if (observedValue != null) {
                 beforeDestroyObservedValue(observedValue);
                 observedValue.removeListener(this);
-                invalidate();
             }
             this.observedValue = null;
         });
@@ -111,7 +129,6 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
         this.observedValue = new WeakReference<>(observedValue);
         afterSetObservedValue(observedValue);
         observedValue.addListener(this);
-        invalidate();
     }
 
     /**
@@ -140,11 +157,17 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
     @Override
     protected TValue computeValue() {
         final Optional<ObservableValue<TValue>> observedValue = getObservedValue();
-
         if (observedValue.isPresent()) {
-            return observedValue.get().getValue();
+            if (valueReplacer != null) {
+                return valueReplacer.apply(observedValue.get().getValue());
+            } else {
+                return observedValue.get().getValue();
+            }
+            // return valueReplacer != null ? valueReplacer.apply(observedValue.get().getValue()) : observedValue.get().getValue();
+        } else if (fallbackSupplier != null) {
+            return fallbackSupplier.get();
         } else {
-            return this.fallbackValue;
+            return null;
         }
     }
 
@@ -171,60 +194,126 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
     // region Public
 
     /**
-     * Sets the {@link #fallbackValue}, which is used whenever this bindings {@link #observedValue} or its value is null.
-     *
-     * @param value the value to fallback on, when the {@link #observedValue} or its value is null.
-     *
-     * @return this {@link RootBinding}.
+     * {@inheritDoc}
      */
-    public RootBinding<TValue> fallbackOn(final TValue value) {
-        fallbackValue = value;
+    @Override
+    @NotNull
+    public IFluentBinding<TValue> fallbackOn(@Nullable final TValue fallbackValue) {
+        this.fallbackSupplier = () -> fallbackValue;
         invalidate();
         return this;
     }
 
     /**
-     * Adds a the given {@link ChangeListener} as a {@link WeakChangeListener} to this binding, so it can automatically be removed later one. Note if there is already a {@link #changeListener} set,
-     * it will first be removed, before the new {@link ChangeListener} is used.
-     *
-     * @param changeListener the {@link ChangeListener} to use.
-     *
-     * @return this {@link RootBinding}.
-     *
-     * @see #stopWaitingForChange()
+     * {@inheritDoc}
      */
-    public RootBinding<TValue> waitForChange(final ChangeListener<TValue> changeListener) {
-        stopWaitingForChange();
-
-        this.changeListener = new WeakChangeListener<>(changeListener);
-        addListener(this.changeListener);
+    @Override
+    @NotNull
+    public IFluentBinding<TValue> stopFallbackOn() {
+        this.fallbackSupplier = null;
+        invalidate();
         return this;
     }
 
     /**
-     * Removes the current {@link #changeListener} from this binding. If no {@link ChangeListener} has been set yet, then a call to this method will have no effect.
-     *
-     * @return this {@link RootBinding}.
-     *
-     * @see #waitForChange(ChangeListener)
+     * {@inheritDoc}
      */
-    public RootBinding<TValue> stopWaitingForChange() {
-        if (changeListener != null) {
-            removeListener(changeListener);
+    @Override
+    @NotNull
+    public boolean hasFallbackValue() {
+        return fallbackSupplier != null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public IFluentBinding<TValue> replaceWith(@Nullable final Function<TValue, TValue> valueReplacer) {
+        this.valueReplacer = valueReplacer;
+        invalidate();
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public IFluentBinding<TValue> stopReplacement() {
+        if (valueReplacer != null) {
+            valueReplacer = null;
+        }
+        invalidate();
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasReplacement() {
+        return valueReplacer != null;
+    }
+
+    @Override
+    public void addListener(@NotNull final InvalidationListener listener) {
+        super.addListener(listener);
+        invalidationListeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(@NotNull final InvalidationListener listener) {
+        super.removeListener(listener);
+        invalidationListeners.remove(listener);
+    }
+
+    @Override
+    public void addListener(@NotNull final ChangeListener<? super TValue> listener) {
+        super.addListener(listener);
+        changeListeners.add(listener);
+    }
+
+    @Override
+    public void removeListener(@NotNull final ChangeListener<? super TValue> listener) {
+        super.removeListener(listener);
+        changeListeners.remove(listener);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public IFluentBinding<TValue> stopListeners() {
+        while (!invalidationListeners.isEmpty()) {
+            removeListener(invalidationListeners.get(0));
+        }
+        while (!changeListeners.isEmpty()) {
+            removeListener(changeListeners.get(0));
         }
         return this;
     }
 
+    @Override
+    public boolean hasListeners() {
+        return !invalidationListeners.isEmpty() || !changeListeners.isEmpty();
+    }
+
     /**
-     * Stops listening to the {@link #observedValue} and also sets the {@link #fallbackValue} to null.
+     * Stops listening to the {@link #observedValue} and also stops the replacement, fallback value and all attached listeners.
      *
-     * @see #stopWaitingForChange()
+     * @see #stopReplacement()
+     * @see #stopFallbackOn()
+     * @see #stopListeners()
      */
     @Override
     public void dispose() {
         destroyObservedValue();
-        stopWaitingForChange();
-        fallbackValue = null;
+        stopReplacement();
+        stopFallbackOn();
+        stopListeners();
+        invalidate();
     }
 
     // endregion

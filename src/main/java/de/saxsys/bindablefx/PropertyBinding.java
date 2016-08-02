@@ -16,6 +16,7 @@ package de.saxsys.bindablefx;
 import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.Optional;
@@ -54,8 +55,22 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
 
     // region Fields
 
+    /**
+     * The currently bound value of this binding.
+     */
+    @Nullable
     private WeakReference<ObservableValue<? extends TValue>> boundValue;
 
+    /**
+     * The currently bound value of this binding.
+     */
+    @Nullable
+    private WeakReference<Property<? extends TValue>> bidirectionalBoundValue;
+
+    /**
+     * The last value that has been set for this property binding, will be used once the property gets available.
+     */
+    @Nullable
     private TValue memorizedValue;
 
     // endregion
@@ -68,108 +83,15 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
 
     // endregion
 
-    // region Public
-
-    //    /**
-    //     * Consumes the computed {@link Property} of this binding each time it is propertyChanged, note that this does not mean that the value of the {@link Property} is propertyChanged but the
-    //     * computed {@link Property} itself. So this will only happen if this bindings {@link #observedValue} is propertyChanged, which will then provide a new computed
-    //     * {@link Property}. The
-    //     * previous {@link Property} will be saved, so that when a new {@link Property} is computed the old {@link Property} can be consumed prior to the new one. Note that a
-    //     * call
-    //     * to this method will dispose the previous {@link #child}.
-    //     *
-    //     * @param previousValueConsumer the {@link Consumer} to be called when the previous {@link Property} is consumed.
-    //     * @param currentValueConsumer  the {@link Consumer} to be called when the new {@link Property} is consumed.
-    //     *
-    //     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.ConsumerStrategy}.
-    //     *
-    //     * @see de.saxsys.bindablefx.strategy.ConsumerStrategy
-    //     */
-    //    public PropertyBinding<TParentValue, TValue, TProperty> thenConsumeValue(final @NotNull Consumer<TValue> previousValueConsumer, final @NotNull Consumer<TValue>
-    // currentValueConsumer) {
-    //
-    //        return this;
-    //    }
-    //
-    //    /**
-    //     * Calls the given {@link Function} in order to either use the value of the computed {@link Property} or provide a different one. Note that a call to this method will
-    //     * dispose the previous {@link #child}.
-    //     *
-    //     * @param resolver the {@link Function} to be called when this bindings {@link Property} has been computed and shall be used by the child.
-    //     *
-    //     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.FallbackStrategy}.
-    //     *
-    //     * @see de.saxsys.bindablefx.strategy.FallbackStrategy
-    //     */
-    //    public PropertyBinding<TParentValue, TValue, TProperty> thenFallbackOn(@NotNull final Function<ObservableValue<TValue>, TValue> resolver) {
-    //        return this;
-    //    }
-    //
-    //    /**
-    //     * Binds the computed {@link Property} of this binding against the provides {@link ObservableValue}. Note that a call to this method will dispose the previous
-    //     * {@link #child}.
-    //     *
-    //     * @param target the {@link ObservableValue} against which the computed {@link Property} of this binding will be bound.
-    //     *
-    //     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.UnidirectionalStrategy}.
-    //     *
-    //     * @see de.saxsys.bindablefx.strategy.UnidirectionalStrategy
-    //     */
-    //    public PropertyBinding<TParentValue, TValue, TProperty> thenBind(@NotNull final ObservableValue<TValue> target) {
-    //        return this;
-    //    }
-    //
-    //    /**
-    //     * Binds the computed {@link Property} of this binding bidirectional against the provides {@link Property}. Note that a call to this method will dispose the previous
-    //     * {@link #child}.
-    //     *
-    //     * @param target the {@link Property} against which the computed {@link Property} of this binding will be bound.
-    //     *
-    //     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.BidirectionalStrategy}.
-    //     *
-    //     * @see de.saxsys.bindablefx.strategy.BidirectionalStrategy
-    //     */
-    //    public PropertyBinding<TParentValue, TValue, TProperty> thenBindBidirectional(@NotNull final Property<TValue> target) {
-    //        return this;
-    //    }
-    //
-    //    /**
-    //     * Binds the computed {@link Property} of this binding bidirectional against the provides {@link Property}. If the value of current computed {@link Property} is null, then
-    //     * the fallbackValue is used instead. Note that a call to this method will dispose the previous {@link #child}.
-    //     *
-    //     * @param target the {@link Property} against which the computed {@link Property} of this binding will be bound.
-    //     *
-    //     * @return this bindings {@link #child}, which also a new {@link StrategyListener} using a {@link de.saxsys.bindablefx.strategy.FallbackBidirectionalStrategy}.
-    //     *
-    //     * @see de.saxsys.bindablefx.strategy.FallbackBidirectionalStrategy
-    //     */
-    //    public PropertyBinding<TParentValue, TValue, TProperty> thenBindBidirectionalOrFallbackOn(@NotNull final Property<TValue> target, final TValue @Nullable fallbackValue) {
-    //        return this;
-    //    }
-    //
-    //    /**
-    //     * Uses the provided {@link IStrategy}, which will be invoked each time the computed {@link ObservableValue} of this binding is propertyChanged. Note that a call to this method will
-    //     * dispose the previous {@link #child}.
-    //     *
-    //     * @param strategy the {@link IStrategy} to be used when the computed {@link Property} changes.
-    //     *
-    //     * @return this bindings {@link #child}, which also a new {@link StrategyListener}.
-    //     *
-    //     * @see IStrategy
-    //     */
-    //    public PropertyBinding<TParentValue, TValue, TProperty> thenUseStrategy(final @NotNull IStrategy<ObservableValue<TValue>> strategy) {
-    //        return this;
-    //    }
-
-    // endregion
-
     // region Override RootBinding
 
     @Override
     protected void beforeDestroyObservedValue(@NotNull final ObservableValue<TValue> observableValue) {
-        if (isBound()) {
-            unbind();
-        }
+        getObservedValue().ifPresent(observedValue -> {
+            if (isBound()) {
+                ((Property) observedValue).unbind();
+            }
+        });
     }
 
     @SuppressWarnings ("unchecked")
@@ -226,35 +148,38 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
     @SuppressWarnings ("unchecked")
     @Override
     public void bind(@NotNull final ObservableValue<? extends TValue> observable) {
-        unbind();
         memorizedValue = null;
         this.boundValue = new WeakReference<>(observable);
-        getObservedValue().ifPresent(observedValue -> ((Property) observedValue).bind(observable));
+        getObservedValue().ifPresent(observedValue -> {
+            if (((Property) observedValue).isBound()) {
+                ((Property) observedValue).unbind();
+            }
+            ((Property) observedValue).bind(observable);
+        });
     }
 
     @Override
     public void unbind() {
-        getObservedValue().ifPresent(property -> ((Property) property).unbind());
-        boundValue = null;
+        if (isBound()) {
+            getObservedValue().ifPresent(property -> ((Property) property).unbind());
+            boundValue = null;
+        }
     }
 
     @Override
     public boolean isBound() {
-        if (boundValue != null && boundValue.get() != null) {
-            return true;
-        }
-
-        final Optional<ObservableValue<TValue>> currentProperty = getObservedValue();
-        return currentProperty.isPresent() && ((Property) currentProperty.get()).isBound();
+        return boundValue != null && boundValue.get() != null;
     }
 
     @Override
     public void bindBidirectional(@NotNull final Property<TValue> other) {
+        memorizedValue = null;
         javafx.beans.binding.Bindings.bindBidirectional(this, other);
     }
 
     @Override
     public <TOtherValue> void bindBidirectional(@NotNull final Property<TOtherValue> other, @NotNull final IConverter<TValue, TOtherValue> converter) {
+        memorizedValue = null;
         Bindings.bindBidirectional(this, other, converter);
     }
 

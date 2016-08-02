@@ -23,7 +23,11 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static de.saxsys.bindablefx.TestUtil.getObservedValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author xyanid on 31.03.2016.
@@ -52,263 +56,212 @@ public class PropertyBindingTest {
 
     // endregion
 
-    //region Tests
-
-    //region Initialization
+    // region Tests
 
     /**
      * A binding chain can be created even if only the first observed value is known but does not yet have a value.
      */
     @Test
     public void aPropertyBindingCanBeCreated() {
-
         cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+
+        assertNull(getObservedValue(cut));
+
+        a.bProperty().setValue(new B());
 
         assertNotNull(getObservedValue(cut));
     }
 
-
     /**
-     * A reverse unidirectional binding can be created with the nested binding. If any intermediate binding is propertyChanged, the property will be hooked up the the new value.
+     * When {@link IPropertyBinding#setValue(Object)} is called and the underlying {@link javafx.beans.value.ObservableValue} is present, the value will be used and not memorized.
      */
     @Test
-    public void creatingAReverseUnidirectionalBindingWillAllowToBindTheRelayedProperty() {
+    public void settingTheValueWillSetTheValueOfTheObservedValueAndTheValueWillNotBeMemorized() {
 
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+        a.bProperty().setValue(new B());
 
+        // set the value since observed value is known
+        cut.setValue(10L);
+        assertEquals(10L, cut.getValue().longValue());
+        assertEquals(10L, a.bProperty().getValue().xProperty().getValue().longValue());
+
+        // after new observed value is know should not apply value again
+        a.bProperty().setValue(new B());
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
     }
 
-    //    /**
-    //     * A bidirectional binding can be created with the nested binding. If any intermediate binding is propertyChanged, the property will be hooked up the the new value.
-    //     */
-    //    @Test
-    //    public void creatingABidirectionalBindingWillAllowToBindTheRelayedProperty() {
-    //
-    //        cut = Bindings.observe(a.bProperty(), B::cProperty);
-    //        cut.thenObserve(C::dProperty).thenObserve(D::eProperty).thenObserve(E::xProperty).thenBindBidirectional(x);
-    //
-    //        BaseListener bindingC = TestUtil.getChild(cut);
-    //        BaseListener bindingD = TestUtil.getChild((NestedBinding) bindingC);
-    //        BaseListener bindingE = TestUtil.getChild((NestedBinding) bindingD);
-    //
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //
-    //        // binding for E is disposed
-    //        assertThat(bindingE, instanceOf(BidirectionalStrategy.class));
-    //        assertTrue(bindingE.getObservedValue().isPresent());
-    //
-    //        // otherX will adjust the Es x property
-    //        x.setValue(2L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //
-    //        // otherX will adjust the Es x property
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    /**
-    //     * A bidirectional binding can be created with the nested binding. If any intermediate binding is propertyChanged, the property will be hooked up the the new value.
-    //     */
-    //    @Test
-    //    public void creatingABidirectionalFallbackBindingWillAllowToBindTheRelayedProperty() {
-    //
-    //        // TODO fix
-    //
-    //        cut = Bindings.observe(a.bProperty(), B::cProperty);
-    //        cut.thenObserve(C::dProperty).thenObserve(D::eProperty).thenObserve(E::xProperty).thenBindBidirectionalOrFallbackOn(x, Long.MAX_VALUE);
-    //
-    //        BaseListener bindingC = TestUtil.getChild(cut);
-    //        BaseListener bindingD = TestUtil.getChild((NestedBinding) bindingC);
-    //        BaseListener bindingE = TestUtil.getChild((NestedBinding) bindingD);
-    //
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //
-    //        // binding for E is disposed
-    //        assertThat(bindingE, instanceOf(BidirectionalStrategy.class));
-    //        assertTrue(bindingE.getObservedValue().isPresent());
-    //
-    //        // otherX will adjust the Es x property
-    //        x.setValue(2L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //
-    //        // otherX will adjust the Es x property
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    //endregion
-    //
-    //    //region No Strong Reference
-    //
-    //    /**
-    //     * Creating a nested binding for the relayed property will work as expected when the binding was set up without a strong reference.
-    //     */
-    //    @Test
-    //    public void creatingABindingWithOutAStrongReferenceWillAllowToBindTheRelayedPropertyWhenTheObservedPropertiesAreChanged() {
-    //
-    //        Bindings.observe(a.bProperty(), B::cProperty).thenObserve(C::dProperty).thenObserve(D::eProperty).thenObserve(E::xProperty).thenBindBidirectional(x);
-    //
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //        // otherX will adjust the Es x property
-    //        x.setValue(2L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //
-    //        // otherX will adjust the Es x property
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    /**
-    //     * Creating a nested binding for the relayed property will work as expected when the binding was set up without a strong reference.
-    //     */
-    //    @Test
-    //    public void creatingABindingWithOutAStrongReferenceAndGarbageCollectingTheFirstObservedPropertyWillDisposeTheEntireNestedChain() {
-    //
-    //        Bindings.observe(a.bProperty(), B::cProperty).thenObserve(C::dProperty).thenObserve(D::eProperty).thenObserve(E::xProperty).thenBindBidirectional(x);
-    //
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //        // otherX will adjust the Es x property
-    //        x.setValue(2L);
-    //        assertEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //
-    //        a = null;
-    //
-    //        System.gc();
-    //
-    //        a = new A();
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //        // otherX will adjust the Es x property
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().setValue(3L);
-    //        assertNotEquals(x.getValue(), a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue().xProperty().getValue());
-    //    }
-    //
-    //    //endregion
-    //
-    //    //region Disposing
-    //
-    //    /**
-    //     * If a binding is disposes, all of its child bindings wil be disposed as well.
-    //     */
-    //    @Test
-    //    public void disposingABindingWillDisposeAllItsChildBindings() throws Throwable {
-    //
-    //        cut = Bindings.observe(a.bProperty(), B::cProperty);
-    //        cut.thenObserve(C::dProperty).thenObserve(D::eProperty).thenObserve(E::xProperty);
-    //
-    //        BaseListener bindingC = TestUtil.getChild(cut);
-    //        BaseListener bindingD = TestUtil.getChild((NestedBinding) bindingC);
-    //        BaseListener bindingE = TestUtil.getChild((NestedBinding) bindingD);
-    //
-    //        bindingC.dispose();
-    //
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //        // binding for B know what to do
-    //        assertTrue(cut.getObservedValue().isPresent());
-    //        assertEquals(a.bProperty().getValue(), cut.getObservedValue().orElseThrow(IllegalArgumentException::new));
-    //
-    //        // binding for C know what to do
-    //        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedValue(bindingC).get());
-    //        assertTrue(bindingC.getObservedValue().isPresent());
-    //        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getObservedValue().orElseThrow(IllegalArgumentException::new));
-    //
-    //        // binding for D is disposed
-    //        assertFalse(bindingD.getObservedValue().isPresent());
-    //        assertNull(TestUtil.getObservedValue(bindingD));
-    //
-    //        // binding for E is disposed
-    //        assertFalse(bindingE.getObservedValue().isPresent());
-    //        assertNull(TestUtil.getObservedValue(bindingE));
-    //    }
-    //
-    //    /**
-    //     * When the observed property of the first {@link NestedBinding} is disposed, all the other observed properties of the child bindings will also no longer have a value.
-    //     */
-    //    @Test
-    //    public void whenTheFirstObservedPropertyIsGarbageCollectedTheEntireNestedChainWillBeDisposed() throws Throwable {
-    //
-    //        cut = Bindings.observe(a.bProperty(), B::cProperty);
-    //        cut.thenObserve(C::dProperty).thenObserve(D::eProperty).thenObserve(E::xProperty);
-    //
-    //        BaseListener bindingC = TestUtil.getChild(cut);
-    //        BaseListener bindingD = TestUtil.getChild((NestedBinding) bindingC);
-    //        BaseListener bindingE = TestUtil.getChild((NestedBinding) bindingD);
-    //
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //        // binding for B know what to do
-    //        assertTrue(cut.getObservedValue().isPresent());
-    //        assertEquals(a.bProperty().getValue(), cut.getObservedValue().orElseThrow(IllegalArgumentException::new));
-    //
-    //        // binding for C know what to do
-    //        assertEquals(a.bProperty().getValue().cProperty(), TestUtil.getObservedValue(bindingC).get());
-    //        assertTrue(bindingC.getObservedValue().isPresent());
-    //        assertEquals(a.bProperty().getValue().cProperty().getValue(), bindingC.getObservedValue().orElseThrow(IllegalArgumentException::new));
-    //
-    //        // binding for D know what to do
-    //        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty(), TestUtil.getObservedValue(bindingD).get());
-    //        assertTrue(bindingD.getObservedValue().isPresent());
-    //        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue(), bindingD.getObservedValue().orElseThrow(IllegalArgumentException::new));
-    //
-    //        // binding for E know what to do
-    //        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty(), TestUtil.getObservedValue(bindingE).get());
-    //        assertTrue(bindingE.getObservedValue().isPresent());
-    //        assertEquals(a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().getValue(), bindingE.getObservedValue().orElseThrow(IllegalArgumentException::new));
-    //
-    //        a = null;
-    //
-    //        System.gc();
-    //
-    //        a = new A();
-    //        a.bProperty().setValue(new B());
-    //        a.bProperty().getValue().cProperty().setValue(new C());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().setValue(new D());
-    //        a.bProperty().getValue().cProperty().getValue().dProperty().getValue().eProperty().setValue(new E());
-    //
-    //        // TODO we still have not invoked dispose really since we did not get notified about the loose of the observed property
-    //        // binding for B is disposed
-    //        assertFalse(cut.getObservedValue().isPresent());
-    //        //assertNull(TestUtil.getObservedValue(cut));
-    //
-    //        // binding for C is disposed
-    //        assertFalse(bindingC.getObservedValue().isPresent());
-    //        //assertNull(TestUtil.getObservedValue(bindingC));
-    //
-    //        // binding for D is disposed
-    //        assertFalse(bindingD.getObservedValue().isPresent());
-    //        //assertNull(TestUtil.getObservedValue(bindingD));
-    //
-    //        // binding for E is disposed
-    //        assertFalse(bindingE.getObservedValue().isPresent());
-    //        //assertNull(TestUtil.getObservedValue(bindingE));
-    //    }
+    /**
+     * When {@link IPropertyBinding#setValue(Object)} is called and the underlying {@link javafx.beans.value.ObservableValue} is not yet set, then it the value will be memorized and set once the
+     * {@link javafx.beans.value.ObservableValue} gets known. This will happen only once though.
+     */
+    @Test
+    public void whenAValueIsSetAndNoObservedValueIsPresentYetTheValueWillBeMemorizedAndSetOnceTheObservedValueIsKnownButOnlyOnce() {
 
-    //endregion
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+        cut.setValue(10L);
+
+        // should apply the memorized value here
+        a.bProperty().setValue(new B());
+        assertEquals(10L, cut.getValue().longValue());
+        assertEquals(10L, a.bProperty().getValue().xProperty().getValue().longValue());
+
+        // after new observed value is know should not apply value again
+        a.bProperty().setValue(new B());
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+    }
+
+    /**
+     * A {@link IPropertyBinding} can be bound against an {@link javafx.beans.value.ObservableValue} and can also be unbound.
+     */
+    @Test
+    public void aPropertyBindingCanBeBoundAgainstAnotherObservedValue() {
+
+        a.bProperty().setValue(new B());
+        x.set(1L);
+
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+
+        // after initial binding we should have the same value as the observed value
+        cut.bind(x);
+
+        assertTrue(cut.isBound());
+        assertEquals(1L, cut.getValue().longValue());
+        assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
+
+        // changing should transmit the new value
+        x.set(20L);
+
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+
+        // change in the parent to null will prevent not allow for the value to be set
+        a.bProperty().setValue(null);
+
+        assertTrue(cut.isBound());
+        assertNull(cut.getValue());
+
+        // change of the parent to a non null value will immediately transmit the bound value gain
+        a.bProperty().setValue(new B());
+
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+
+        // unbinding will prevent further changes to be transmitted
+        cut.unbind();
+        x.set(10L);
+
+        assertFalse(cut.isBound());
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+    }
+
+    /**
+     * When a value has been set previously, binding will forget the previously set value so that when the binding is unbound and a new {@link javafx.beans.value.ObservableValue} is set, the
+     * {@link javafx.beans.value.ObservableValue} will not be adjusted.
+     */
+    @Test
+    public void whenAPropertyBindingGetBoundItWillForgetItsPreviouslySetValue() {
+
+        x.set(1L);
+
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+
+        cut.setValue(10L);
+
+        cut.bind(x);
+
+        a.bProperty().setValue(new B());
+
+        assertEquals(1L, cut.getValue().longValue());
+        assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
+
+        cut.unbind();
+
+        a.bProperty().setValue(new B());
+
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+    }
+
+    /**
+     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} and can also be unbound bidirectional.
+     */
+    @Test
+    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherProperty() {
+
+        a.bProperty().setValue(new B());
+        x.set(1L);
+
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+
+        // after initial binding we should have the same value as the observed value
+        cut.bindBidirectional(x);
+
+        assertFalse(cut.isBound());
+        assertEquals(1L, cut.getValue().longValue());
+        assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(1L, x.get().longValue());
+
+        // change the other property will transmit the value to the binding
+        x.set(20L);
+
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(20L, x.get().longValue());
+
+        // change the binding will transmit the value to the other property
+        cut.setValue(30L);
+
+        assertEquals(30L, cut.getValue().longValue());
+        assertEquals(30L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(30L, x.get().longValue());
+
+        // setting the parent to null thus destroying the property will set the other property to null
+        a.bProperty().setValue(null);
+
+        assertNull(cut.getValue());
+        assertNull(x.get());
+
+        // setting the binding will memorize the value and thus transmit it to other property
+        cut.setValue(33L);
+        a.bProperty().setValue(new B());
+
+        assertEquals(33L, cut.getValue().longValue());
+        assertEquals(33L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(33L, x.get().longValue());
+
+        // setting the parent to null thus destroying the property will set the other property to null
+        a.bProperty().setValue(null);
+
+        assertNull(cut.getValue());
+        assertNull(x.get());
+
+        // setting the other property will memorize the value as well and set it once the binding gets its property
+        x.setValue(22L);
+        a.bProperty().setValue(new B());
+
+        assertEquals(22L, cut.getValue().longValue());
+        assertEquals(22L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(22L, x.get().longValue());
+
+        // unbinding will cause the relationship to end
+        cut.unbindBidirectional(x);
+        x.set(40L);
+
+        assertEquals(22L, cut.getValue().longValue());
+        assertEquals(22L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(40L, x.get().longValue());
+
+        cut.setValue(44L);
+
+        assertEquals(44L, cut.getValue().longValue());
+        assertEquals(44L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(40L, x.get().longValue());
+    }
+
 
     // endregion
 }

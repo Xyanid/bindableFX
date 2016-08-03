@@ -93,6 +93,9 @@ public class RelayBinding<TParentValue, TValue, TObservedValue extends Observabl
 
     // region Override RootBinding
 
+    /**
+     * {@inheritDoc} Also stops listening to the {@link #parent}.
+     */
     @Override
     public void dispose() {
         super.dispose();

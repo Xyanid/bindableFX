@@ -13,10 +13,12 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.property.Property;
 import javafx.beans.value.ObservableValue;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 /**
  * @author Xyanid on 15.05.2016.
@@ -38,6 +40,10 @@ final class TestUtil {
 
     static WeakReference<ObservableValue> getParent(final IFluentBinding binding) {
         return (WeakReference<ObservableValue>) Whitebox.getInternalState(binding, "parent");
+    }
+
+    static List<WeakReference<Property>> getBidirectionalBoundProperties(final IPropertyBinding binding) {
+        return (List<WeakReference<Property>>) Whitebox.getInternalState(binding, "bidirectionalBoundProperties");
     }
 
     // endregion

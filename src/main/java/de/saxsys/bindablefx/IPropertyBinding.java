@@ -31,4 +31,17 @@ public interface IPropertyBinding<TValue> extends Property<TValue>, IFluentBindi
      * @param <TOtherValue> the type of the value of the other {@link Property}.
      */
     <TOtherValue> void bindBidirectional(@NotNull final Property<TOtherValue> other, final @NotNull IConverter<TValue, TOtherValue> converter);
+
+    /**
+     * Unbinds the given {@link Property} bidirectional from this {@link IPropertyBinding}.
+     *
+     * @param other         the other {@link Property} to bind to.
+     * @param <TOtherValue> the type of the value of the other {@link Property}.
+     */
+    <TOtherValue> void unbindBidirectionalConverted(@NotNull final Property<TOtherValue> other);
+
+    /**
+     * Unbinds this {@link IPropertyBinding} bidirectional from any property it might have been bound too.
+     */
+    void unbindBidirectional();
 }

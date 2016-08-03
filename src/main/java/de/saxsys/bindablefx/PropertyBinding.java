@@ -19,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -64,8 +66,8 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
     /**
      * The currently bound value of this binding.
      */
-    @Nullable
-    private WeakReference<Property<? extends TValue>> bidirectionalBoundValue;
+    @NotNull
+    private final List<WeakReference<Property>> bidirectionalBoundProperties = new ArrayList<>();
 
     /**
      * The last value that has been set for this property binding, will be used once the property gets available.
@@ -103,6 +105,16 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
         } else if (memorizedValue != null) {
             setValue(memorizedValue);
         }
+    }
+
+    /**
+     * {@inheritDoc} Also bidirectionally unbinds all bound properties available in {@link #bidirectionalBoundProperties}.
+     */
+    @Override
+    public void dispose() {
+        super.dispose();
+        unbind();
+        unbindBidirectional();
     }
 
     // endregion
@@ -175,18 +187,53 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
     public void bindBidirectional(@NotNull final Property<TValue> other) {
         memorizedValue = null;
         javafx.beans.binding.Bindings.bindBidirectional(this, other);
+        bidirectionalBoundProperties.add(new WeakReference<>(other));
+    }
+
+    @Override
+    public void unbindBidirectional(@NotNull final Property<TValue> other) {
+        unbindProperty(other);
     }
 
     @Override
     public <TOtherValue> void bindBidirectional(@NotNull final Property<TOtherValue> other, @NotNull final IConverter<TValue, TOtherValue> converter) {
         memorizedValue = null;
         Bindings.bindBidirectional(this, other, converter);
+        bidirectionalBoundProperties.add(new WeakReference<>(other));
     }
 
     @Override
-    public void unbindBidirectional(@NotNull final Property<TValue> other) {
-        javafx.beans.binding.Bindings.unbindBidirectional(this, other);
-        Bindings.unbindBidirectional(this, other);
+    public <IOtherValue> void unbindBidirectionalConverted(@NotNull final Property<IOtherValue> other) {
+        unbindProperty(other);
+    }
+
+    @SuppressWarnings ("unchecked")
+    @Override
+    public void unbindBidirectional() {
+        while (!bidirectionalBoundProperties.isEmpty()) {
+            final Property prop = bidirectionalBoundProperties.get(0).get();
+            if (prop != null) {
+                javafx.beans.binding.Bindings.unbindBidirectional(this, prop);
+                Bindings.unbindBidirectional(this, prop);
+            }
+            bidirectionalBoundProperties.remove(0);
+        }
+    }
+
+    // endregion
+
+    // region Private
+
+    @SuppressWarnings ("unchecked")
+    private void unbindProperty(@NotNull final Property other) {
+        for (int i = 0; i < bidirectionalBoundProperties.size(); ++i) {
+            final Property prop = bidirectionalBoundProperties.get(i).get();
+            if (prop == null || prop == other) {
+                javafx.beans.binding.Bindings.unbindBidirectional(this, other);
+                Bindings.unbindBidirectional(this, other);
+                bidirectionalBoundProperties.remove(i--);
+            }
+        }
     }
 
     // endregion

@@ -92,6 +92,7 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
      *
      * @return {@link Optional#empty()} if the {@link #observedValue} is null or an {@link Optional} of the current value of the {@link #observedValue}.
      */
+    @NotNull
     public Optional<ObservableValue<TValue>> getObservedValue() {
 
         if (observedValue == null) {
@@ -154,16 +155,12 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
      *
      * @return the current value of the {@link #observedValue} if any.
      */
+    @Nullable
     @Override
     protected TValue computeValue() {
         final Optional<ObservableValue<TValue>> observedValue = getObservedValue();
         if (observedValue.isPresent()) {
-            if (valueReplacer != null) {
-                return valueReplacer.apply(observedValue.get().getValue());
-            } else {
-                return observedValue.get().getValue();
-            }
-            // return valueReplacer != null ? valueReplacer.apply(observedValue.get().getValue()) : observedValue.get().getValue();
+            return valueReplacer != null ? valueReplacer.apply(observedValue.get().getValue()) : observedValue.get().getValue();
         } else if (fallbackSupplier != null) {
             return fallbackSupplier.get();
         } else {
@@ -219,7 +216,6 @@ class RootBinding<TValue> extends ObjectBinding<TValue> implements IFluentBindin
      * {@inheritDoc}
      */
     @Override
-    @NotNull
     public boolean hasFallbackValue() {
         return fallbackSupplier != null;
     }

@@ -44,4 +44,11 @@ public interface IPropertyBinding<TValue> extends Property<TValue>, IFluentBindi
      * Unbinds this {@link IPropertyBinding} bidirectional from any property it might have been bound too.
      */
     void unbindBidirectional();
+
+    /**
+     * Determines if this {@link IPropertyBinding} is bidirectional bound against any other {@link Property}.
+     *
+     * @return true if this {@link IPropertyBinding} is bidirectional bound against any other {@link Property}, otherwise false.
+     */
+    boolean isBidirectionalBound();
 }

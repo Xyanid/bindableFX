@@ -42,7 +42,7 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
 
     //region Constructor
 
-    private BidirectionalBinding(Object property1, Object property2) {
+    private BidirectionalBinding(@NotNull final Object property1, @NotNull final Object property2) {
         cachedHashCode = property1.hashCode() * property2.hashCode();
     }
 
@@ -63,8 +63,10 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
 
     // region Abstract
 
+    @Nullable
     protected abstract Object getProperty1();
 
+    @Nullable
     protected abstract Object getProperty2();
 
     // endregion
@@ -115,7 +117,7 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
     @SuppressWarnings ({"unchecked", "ConstantConditions"})
     public static <TValue, TOtherValue> BidirectionalBinding<Object> bind(@NotNull final Property<TValue> property1,
                                                                           @NotNull final Property<TOtherValue> property2,
-                                                                          final @NotNull IConverter<TValue, TOtherValue> converter) {
+                                                                          @NotNull final IConverter<TValue, TOtherValue> converter) {
         checkParametersOrFail(property1, property2);
         if (converter == null) {
             throw new NullPointerException("IConverter cannot be null");
@@ -170,7 +172,7 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
         // region Constructor
 
         @SuppressWarnings ("ConstantConditions")
-        BidirectionalConverterBinding(@NotNull final Property<TValue> property1, @NotNull final Property<TOtherValue> property2, final @NotNull IConverter<TValue, TOtherValue> converter) {
+        BidirectionalConverterBinding(@NotNull final Property<TValue> property1, @NotNull final Property<TOtherValue> property2, @NotNull final IConverter<TValue, TOtherValue> converter) {
             super(property1, property2);
 
             this.property1 = new WeakReference<>(property1);
@@ -182,11 +184,13 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
 
         // region Getter
 
+        @Nullable
         @Override
         protected Property<TValue> getProperty1() {
             return property1.get();
         }
 
+        @Nullable
         @Override
         protected Property<TOtherValue> getProperty2() {
             return property2.get();
@@ -245,31 +249,53 @@ public abstract class BidirectionalBinding<TValue> implements ChangeListener<TVa
         //endregion
     }
 
+    @SuppressWarnings ("NullableProblems")
     private static class UntypedGenericBidirectionalBinding extends BidirectionalBinding<Object> {
 
+        //region Fields
+
+        @NotNull
         private final Object property1;
+
+        @NotNull
         private final Object property2;
 
-        public UntypedGenericBidirectionalBinding(Object property1, Object property2) {
+        //endregion
+
+        //region Constructor
+
+        public UntypedGenericBidirectionalBinding(@NotNull final Object property1, @NotNull final Object property2) {
             super(property1, property2);
             this.property1 = property1;
             this.property2 = property2;
         }
 
+        //endregion
+
+        //region Getter
+
+        @Nullable
         @Override
         protected Object getProperty1() {
             return property1;
         }
 
+        @Nullable
         @Override
         protected Object getProperty2() {
             return property2;
         }
 
+        //endregion
+
+        //region ChangeListener
+
         @Override
         public void changed(ObservableValue<? extends Object> sourceProperty, Object oldValue, Object newValue) {
             throw new RuntimeException("Should not reach here");
         }
+
+        //endregion
     }
 
     // endregion

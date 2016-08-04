@@ -226,6 +226,7 @@ public class PropertyBindingTest {
         // after initial binding we should have the same value as the observed value
         cut.bindBidirectional(x);
 
+        assertTrue(cut.isBidirectionalBound());
         assertFalse(cut.isBound());
         assertEquals(1L, cut.getValue().longValue());
         assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
@@ -277,6 +278,7 @@ public class PropertyBindingTest {
         cut.unbindBidirectional(x);
         x.set(40L);
 
+        assertFalse(cut.isBidirectionalBound());
         assertEquals(22L, cut.getValue().longValue());
         assertEquals(22L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(40L, x.get().longValue());
@@ -295,25 +297,6 @@ public class PropertyBindingTest {
     public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherOfDifferentTypeProperty() {
 
         a.bProperty().setValue(new B());
-        final IConverter<Long, String> converter = new IConverter<Long, String>() {
-            @Nullable
-            @Override
-            public String convertTo(Long aLong) {
-                if (aLong == null) {
-                    return null;
-                }
-                return aLong.toString();
-            }
-
-            @Nullable
-            @Override
-            public Long convertBack(String s) {
-                if (s == null || s.isEmpty()) {
-                    return null;
-                }
-                return Long.parseLong(s);
-            }
-        };
         final Property<String> y = new SimpleObjectProperty<>("1");
 
         cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
@@ -321,6 +304,7 @@ public class PropertyBindingTest {
         // after initial binding we should have the same value as the observed value
         cut.bindBidirectional(y, converter);
 
+        assertTrue(cut.isBidirectionalBound());
         assertFalse(cut.isBound());
         assertEquals(1L, cut.getValue().longValue());
         assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
@@ -372,6 +356,7 @@ public class PropertyBindingTest {
         cut.unbindBidirectionalConverted(y);
         y.setValue("40");
 
+        assertFalse(cut.isBidirectionalBound());
         assertEquals(22L, cut.getValue().longValue());
         assertEquals(22L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals("40", y.getValue());
@@ -401,6 +386,7 @@ public class PropertyBindingTest {
         // bind first prop
         cut.bindBidirectional(prop1, converter);
 
+        assertTrue(cut.isBidirectionalBound());
         assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(1L, cut.getValue().longValue());
         assertEquals("1", prop1.getValue());
@@ -411,6 +397,7 @@ public class PropertyBindingTest {
         // bind second prop
         cut.bindBidirectional(prop2, converter);
 
+        assertTrue(cut.isBidirectionalBound());
         assertEquals(2L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(2L, cut.getValue().longValue());
         assertEquals("2", prop1.getValue());
@@ -421,6 +408,7 @@ public class PropertyBindingTest {
         // bind third prop
         cut.bindBidirectional(prop3);
 
+        assertTrue(cut.isBidirectionalBound());
         assertEquals(3L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(3L, cut.getValue().longValue());
         assertEquals("3", prop1.getValue());
@@ -431,6 +419,7 @@ public class PropertyBindingTest {
         // bind third prop
         cut.bindBidirectional(prop4);
 
+        assertTrue(cut.isBidirectionalBound());
         assertEquals(4L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(4L, cut.getValue().longValue());
         assertEquals("4", prop1.getValue());
@@ -460,6 +449,7 @@ public class PropertyBindingTest {
         // unbind a singe prop of different type
         cut.unbindBidirectionalConverted(prop2);
         cut.setValue(55L);
+        assertTrue(cut.isBidirectionalBound());
         assertEquals(55L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(55L, cut.getValue().longValue());
         assertEquals("55", prop1.getValue());
@@ -470,6 +460,7 @@ public class PropertyBindingTest {
         // unbind a singe prop of different type
         cut.unbindBidirectional(prop4);
         cut.setValue(66L);
+        assertTrue(cut.isBidirectionalBound());
         assertEquals(66L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(66L, cut.getValue().longValue());
         assertEquals("66", prop1.getValue());
@@ -494,6 +485,7 @@ public class PropertyBindingTest {
         prop2.setValue("2");
         prop3.setValue(3L);
         prop4.setValue(4L);
+        assertFalse(cut.isBidirectionalBound());
         assertEquals(0L, a.bProperty().getValue().xProperty().getValue().longValue());
         assertEquals(0L, cut.getValue().longValue());
         assertEquals("1", prop1.getValue());

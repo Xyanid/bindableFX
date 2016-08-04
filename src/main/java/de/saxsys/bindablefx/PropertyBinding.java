@@ -220,6 +220,11 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
         }
     }
 
+    @Override
+    public boolean isBidirectionalBound() {
+        return !bidirectionalBoundProperties.isEmpty();
+    }
+
     // endregion
 
     // region Private

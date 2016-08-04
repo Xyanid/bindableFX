@@ -14,9 +14,11 @@
 package de.saxsys.bindablefx;
 
 import javafx.beans.property.Property;
+import javafx.beans.value.ObservableValue;
 import org.mockito.internal.util.reflection.Whitebox;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 /**
  * @author Xyanid on 15.05.2016.
@@ -32,26 +34,16 @@ final class TestUtil {
 
     // region Methods
 
-    /**
-     * Returns the {@link CascadedRelayBinding#child} of the given {@link CascadedRelayBinding}.
-     *
-     * @param binding the {@link CascadedRelayBinding} to use.
-     *
-     * @return the {@link CascadedRelayBinding#child} of the given {@link CascadedRelayBinding}.
-     */
-    static BaseBinding getChild(final CascadedRelayBinding binding) {
-        return (BaseBinding) Whitebox.getInternalState(binding, "child");
+    static WeakReference<ObservableValue> getObservedValue(final IFluentBinding binding) {
+        return (WeakReference<ObservableValue>) Whitebox.getInternalState(binding, "observedValue");
     }
 
-    /**
-     * Returns the {@link BaseBinding#observedProperty} of the given {@link BaseBinding}.
-     *
-     * @param binding the {@link BaseBinding} to use.
-     *
-     * @return the {@link BaseBinding#observedProperty} of the given {@link BaseBinding}.
-     */
-    static WeakReference<Property> getObservedProperty(final BaseBinding binding) {
-        return (WeakReference<Property>) Whitebox.getInternalState(binding, "observedProperty");
+    static WeakReference<ObservableValue> getParent(final IFluentBinding binding) {
+        return (WeakReference<ObservableValue>) Whitebox.getInternalState(binding, "parent");
+    }
+
+    static List<WeakReference<Property>> getBidirectionalBoundProperties(final IPropertyBinding binding) {
+        return (List<WeakReference<Property>>) Whitebox.getInternalState(binding, "bidirectionalBoundProperties");
     }
 
     // endregion

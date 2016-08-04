@@ -13,90 +13,95 @@
 
 package de.saxsys.bindablefx;
 
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.function.Function;
 
 /**
- * This class will act as a relay binding, meaning when the {@link #observedProperty} is changed the {@link #relayProvider} will be invoked, so that the
- * next desired relayed object will be known.
+ * This is a binding that acts as an intermediate binding so that multiple cascaded properties can be observed and the desired property can be bound at the
+ * very end. So if you want to bind a property which itself is contained cascadingly in other properties.
+ * <p>
+ * e.G. if we have a class A which hold a property of B, which hold property of C, which holds a property of D and D is the property we want to bind to, we
+ * would like build something like this
+ * <pre>
+ * {@code
+ * A a = new A();
+ * ObjectProperty<Long> property = new SimpleObjectProperty<>();
+ * a.getB().getC().dProperty().bindBidirectional(property);
+ * }
+ * </pre>
+ * However since B and C might be null we would need to listen to the values to become available at some point in time. This is where the
+ * {@link RelayBinding} comes into play and handles this by attaching listeners cascadingly so that we can bind to D with no concern that B or C might be
+ * null, change or become invalid.
+ * <p>
+ * e.g. using the above example, the code to safely bind to D would look like this.
+ * <pre>
+ * {@code
+ * A a = new A();
+ * ObjectProperty<Long> property = new SimpleObjectProperty<>();
+ *
+ * new NestedBinding(a.bProperty(), B::cProperty).bindBidirectional(C::dProperty, property, false);
+ * }
+ * </pre>
  *
  * @author xyanid on 30.03.2016.
  */
-public abstract class RelayBinding<TPropertyValue, TRelayedObject> extends BaseBinding<TPropertyValue> {
+public class RelayBinding<TParentValue, TValue, TObservedValue extends ObservableValue<TValue>> extends RootBinding<TValue> {
 
     // region Fields
 
     /**
-     * This {@link Function} is called when the underlying {@link #observedProperty} has changed and we need a new property which we can then use.
+     * The {@link Function} which will be used to get the desired {@link ObservableValue} based on the current value of the parent.
      */
-    private final Function<TPropertyValue, TRelayedObject> relayProvider;
+    @NotNull
+    private final Function<TParentValue, TObservedValue> relayResolver;
+
+    /**
+     * The current parent that is used in this binding.
+     */
+    @NotNull
+    private final WeakReference<ObservableValue<TParentValue>> parent;
+
+    /**
+     * The {@link ChangeListener} that is attached to the parent.
+     */
+    @NotNull
+    private final ChangeListener<TParentValue> onParentChanged;
 
     // endregion
 
     // region Constructor
 
-    protected RelayBinding(@NotNull final Function<TPropertyValue, TRelayedObject> relayProvider) {
-        super();
-
-        this.relayProvider = relayProvider;
+    RelayBinding(@NotNull final ObservableValue<TParentValue> parent, @NotNull final Function<TParentValue, TObservedValue> relayResolver) {
+        this.relayResolver = relayResolver;
+        this.onParentChanged = (observable, oldValue, newValue) -> {
+            destroyObservedValue();
+            if (newValue != null) {
+                setObservedValue(relayResolver.apply(newValue));
+            }
+            invalidate();
+        };
+        this.parent = new WeakReference<>(parent);
+        parent.addListener(this.onParentChanged);
+        onParentChanged.changed(parent, null, parent.getValue());
     }
 
     // endregion
 
-    // region Getter
+    // region Override RootBinding
 
     /**
-     * Returns the {@link #relayProvider}.
-     *
-     * @return the {@link #relayProvider}.
-     */
-    protected final Function<TPropertyValue, TRelayedObject> getRelayProvider() {
-        return relayProvider;
-    }
-
-    // endregion
-
-    // region Abstract
-
-    /**
-     * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the old value, so the old
-     * relayed object can be unbound. This will only happen if the old value is not null.
-     *
-     * @param relayedObject the relayed object which was previously bound.
-     */
-    protected abstract void unbindProperty(@Nullable final TRelayedObject relayedObject);
-
-    /**
-     * Will be invoked when the value of the {@link #observedProperty} is changed and the {@link #relayProvider} is applied to the new value, so the new
-     * relayed object can be bound. This will only happen if the new value is not null.
-     *
-     * @param relayedObject the relayed object which was set and needs to be bound now.
-     */
-    protected abstract void bindProperty(@Nullable final TRelayedObject relayedObject);
-
-    // endregion
-
-    // region Override BaseBinding
-
-    /**
-     * When the property was set to something valid, we will use the provided {@link #relayProvider} to get another property which we will listen to
-     *
-     * @param observable the observable value to use
-     * @param oldValue   the old value.
-     * @param newValue   the new value.
+     * {@inheritDoc} Also stops listening to the {@link #parent}.
      */
     @Override
-    public final void changed(@Nullable final ObservableValue<? extends TPropertyValue> observable,
-                              @Nullable final TPropertyValue oldValue,
-                              @Nullable final TPropertyValue newValue) {
-        if (oldValue != null) {
-            unbindProperty(relayProvider.apply(oldValue));
-        }
-        if (newValue != null) {
-            bindProperty(relayProvider.apply(newValue));
+    public void dispose() {
+        super.dispose();
+        final ObservableValue<TParentValue> parent = this.parent.get();
+        if (parent != null) {
+            parent.removeListener(onParentChanged);
         }
     }
 

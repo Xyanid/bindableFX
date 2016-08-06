@@ -99,13 +99,16 @@ public class PropertyBindingTest {
     }
 
     /**
-     * When {@link IPropertyBinding#setValue(Object)} is called and the underlying {@link javafx.beans.value.ObservableValue} is present, the value will be used and not memorized.
+     * When {@link IPropertyBinding#setValue(Object)} is called, the value will not be memorized if the underlying {@link Property} is not set.
      */
     @Test
-    public void settingTheValueWillSetTheValueOfTheObservedValueAndTheValueWillNotBeMemorized() {
+    public void theSetValueWillNotBeMemorized() {
 
         cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
         a.bProperty().setValue(new B());
+
+        // we do not remember the value
+        assertFalse(cut.willRememberSetValue());
 
         // set the value since observed value is known
         cut.setValue(10L);
@@ -116,20 +119,31 @@ public class PropertyBindingTest {
         a.bProperty().setValue(new B());
         assertNull(cut.getValue());
         assertNull(a.bProperty().getValue().xProperty().getValue());
+
+        // set the observed value to null and then set value, should not remember the value
+        a.bProperty().setValue(null);
+        cut.setValue(20L);
+        a.bProperty().setValue(new B());
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
     }
 
     /**
-     * When {@link IPropertyBinding#setValue(Object)} is called and the underlying {@link javafx.beans.value.ObservableValue} is not yet set, then it the value will be memorized and set once the
-     * {@link javafx.beans.value.ObservableValue} gets known. This will happen only once though.
+     * When {@link IPropertyBinding#setValue(Object)} is called, the value will be memorized if the underlying {@link Property} is not set. This may only happen once.
      */
     @Test
-    public void whenAValueIsSetAndNoObservedValueIsPresentYetTheValueWillBeMemorizedAndSetOnceTheObservedValueIsKnownButOnlyOnce() {
+    public void theSetValueWillBeMemorized() {
 
         cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
-        cut.setValue(10L);
+        cut.willRememberSetValue(true);
 
-        // should apply the memorized value here
         a.bProperty().setValue(new B());
+
+        // we do remember the value
+        assertTrue(cut.willRememberSetValue());
+
+        // set the value since observed value is known
+        cut.setValue(10L);
         assertEquals(10L, cut.getValue().longValue());
         assertEquals(10L, a.bProperty().getValue().xProperty().getValue().longValue());
 
@@ -137,6 +151,14 @@ public class PropertyBindingTest {
         a.bProperty().setValue(new B());
         assertNull(cut.getValue());
         assertNull(a.bProperty().getValue().xProperty().getValue());
+
+        // set the observed value to null and then set value, should remember the value
+        a.bProperty().setValue(null);
+        cut.setValue(20L);
+        a.bProperty().setValue(new B());
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+
     }
 
     /**
@@ -213,10 +235,11 @@ public class PropertyBindingTest {
     }
 
     /**
-     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} and can also be unbound bidirectional.
+     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} and can also be unbound bidirectional. The value set in either the binding or the
+     * other property will not be remembered and thus not applied as soon as the observed property is available.
      */
     @Test
-    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherProperty() {
+    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherPropertyAndWillNotRememberTheSetValue() {
 
         a.bProperty().setValue(new B());
         x.set(1L);
@@ -252,8 +275,103 @@ public class PropertyBindingTest {
         assertNull(cut.getValue());
         assertNull(x.get());
 
+        // setting the binding will not influence the other value
+        cut.setValue(33L);
+
+        assertEquals(33L, cut.getValue().longValue());
+        assertEquals(33L, x.get().longValue());
+
+        // setting the parent will set the binding
+        a.bProperty().setValue(new B());
+
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+        assertNull(x.get());
+
+        // setting the parent to null thus destroying the property will set the other property to null
+        a.bProperty().setValue(null);
+
+        assertNull(cut.getValue());
+        assertNull(x.get());
+
+        // setting the other property will not memorize the value as well and set it once the binding gets its property
+        x.setValue(22L);
+
+        assertEquals(22L, cut.getValue().longValue());
+        assertEquals(22L, x.get().longValue());
+
+        // setting the other property will not memorize the value as well and set it once the binding gets its property
+        a.bProperty().setValue(new B());
+
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+        assertNull(x.get());
+
+        // unbinding will cause the relationship to end
+        cut.unbindBidirectional(x);
+        x.set(40L);
+
+        assertFalse(cut.isBidirectionalBound());
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+        assertEquals(40L, x.get().longValue());
+
+        cut.setValue(44L);
+
+        assertEquals(44L, cut.getValue().longValue());
+        assertEquals(44L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(40L, x.get().longValue());
+    }
+
+    /**
+     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} and can also be unbound bidirectional. The value set in either the binding or the
+     * other property will be remembered and thus applied as soon as the observed property is available.
+     */
+    @Test
+    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherPropertyAndWillRememberTheSetValue() {
+
+        a.bProperty().setValue(new B());
+        x.set(1L);
+
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+        cut.willRememberSetValue(true);
+
+        // after initial binding we should have the same value as the observed value
+        cut.bindBidirectional(x);
+
+        assertTrue(cut.isBidirectionalBound());
+        assertFalse(cut.isBound());
+        assertEquals(1L, cut.getValue().longValue());
+        assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(1L, x.get().longValue());
+
+        // change the other property will transmit the value to the binding
+        x.set(20L);
+
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(20L, x.get().longValue());
+
+        // change the binding will transmit the value to the other property
+        cut.setValue(30L);
+
+        assertEquals(30L, cut.getValue().longValue());
+        assertEquals(30L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals(30L, x.get().longValue());
+
+        // setting the parent to null thus destroying the property will set the other property to null
+        a.bProperty().setValue(null);
+
+        assertNull(cut.getValue());
+        assertNull(x.get());
+
         // setting the binding will memorize the value and thus transmit it to other property
         cut.setValue(33L);
+
+        assertEquals(33L, cut.getValue().longValue());
+        assertEquals(33L, x.get().longValue());
+
+        // setting the observed parent will memorize the value and thus transmit it to other property
         a.bProperty().setValue(new B());
 
         assertEquals(33L, cut.getValue().longValue());
@@ -268,6 +386,11 @@ public class PropertyBindingTest {
 
         // setting the other property will memorize the value as well and set it once the binding gets its property
         x.setValue(22L);
+
+        assertEquals(22L, cut.getValue().longValue());
+        assertEquals(22L, x.get().longValue());
+
+        // setting the observed parent will memorize the value as well and set it once the binding gets its property
         a.bProperty().setValue(new B());
 
         assertEquals(22L, cut.getValue().longValue());
@@ -291,10 +414,11 @@ public class PropertyBindingTest {
     }
 
     /**
-     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} of another type and can also be unbound bidirectional.
+     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} of another type and can also be unbound bidirectional. The value set in either the
+     * binding or the other property will not be remembered and thus not applied as soon as the observed property is available.
      */
     @Test
-    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherOfDifferentTypeProperty() {
+    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherOfDifferentTypePropertyAndWillNotRememberTheSetValue() {
 
         a.bProperty().setValue(new B());
         final Property<String> y = new SimpleObjectProperty<>("1");
@@ -330,8 +454,103 @@ public class PropertyBindingTest {
         assertNull(cut.getValue());
         assertNull(y.getValue());
 
+        // setting the binding will not memorize the value and thus transmit it to other property
+        cut.setValue(33L);
+
+        assertEquals(33L, cut.getValue().longValue());
+        assertEquals("33", y.getValue());
+
+        // setting
+        a.bProperty().setValue(new B());
+
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+        assertNull(y.getValue());
+
+        // setting the parent to null thus destroying the property will set the other property to null
+        a.bProperty().setValue(null);
+
+        assertNull(cut.getValue());
+        assertNull(x.get());
+
+        // setting the other property will memorize the value as well and set it once the binding gets its property
+        y.setValue("22");
+
+        assertEquals(22L, cut.getValue().longValue());
+        assertEquals("22", y.getValue());
+
+        // setting the observed property will adjust the binding
+        a.bProperty().setValue(new B());
+
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+        assertNull(y.getValue());
+
+        // unbinding will cause the relationship to end
+        cut.unbindBidirectionalConverted(y);
+        y.setValue("40");
+
+        assertFalse(cut.isBidirectionalBound());
+        assertNull(cut.getValue());
+        assertNull(a.bProperty().getValue().xProperty().getValue());
+        assertEquals("40", y.getValue());
+
+        cut.setValue(44L);
+
+        assertEquals(44L, cut.getValue().longValue());
+        assertEquals(44L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals("40", y.getValue());
+    }
+
+    /**
+     * A {@link IPropertyBinding} can be bound bidirectional against an {@link javafx.beans.property.Property} of another type and can also be unbound bidirectional. The value set in either the
+     * binding or the other property will be remembered and thus applied as soon as the observed property is available.
+     */
+    @Test
+    public void aPropertyBindingCanBeBidirectionalBoundAgainstAnotherOfDifferentTypePropertyAndWillRememberTheSetValue() {
+
+        a.bProperty().setValue(new B());
+        final Property<String> y = new SimpleObjectProperty<>("1");
+
+        cut = Bindings.observe(a.bProperty()).thenObserveProperty(B::xProperty);
+        cut.willRememberSetValue(true);
+
+        // after initial binding we should have the same value as the observed value
+        cut.bindBidirectional(y, converter);
+
+        assertTrue(cut.isBidirectionalBound());
+        assertFalse(cut.isBound());
+        assertEquals(1L, cut.getValue().longValue());
+        assertEquals(1L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals("1", y.getValue());
+
+        // change the other property will transmit the value to the binding
+        y.setValue("20");
+
+        assertEquals(20L, cut.getValue().longValue());
+        assertEquals(20L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals("20", y.getValue());
+
+        // change the binding will transmit the value to the other property
+        cut.setValue(30L);
+
+        assertEquals(30L, cut.getValue().longValue());
+        assertEquals(30L, a.bProperty().getValue().xProperty().getValue().longValue());
+        assertEquals("30", y.getValue());
+
+        // setting the parent to null thus destroying the property will set the other property to null
+        a.bProperty().setValue(null);
+
+        assertNull(cut.getValue());
+        assertNull(y.getValue());
+
         // setting the binding will memorize the value and thus transmit it to other property
         cut.setValue(33L);
+
+        assertEquals(33L, cut.getValue().longValue());
+        assertEquals("33", y.getValue());
+
+        // setting observed parent will memorize the value and thus transmit it to other property
         a.bProperty().setValue(new B());
 
         assertEquals(33L, cut.getValue().longValue());
@@ -346,6 +565,11 @@ public class PropertyBindingTest {
 
         // setting the other property will memorize the value as well and set it once the binding gets its property
         y.setValue("22");
+
+        assertEquals(22L, cut.getValue().longValue());
+        assertEquals("22", y.getValue());
+
+        // setting the observed parent will memorize the value as well and set it once the binding gets its property
         a.bProperty().setValue(new B());
 
         assertEquals(22L, cut.getValue().longValue());

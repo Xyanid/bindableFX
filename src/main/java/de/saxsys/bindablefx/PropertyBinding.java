@@ -70,10 +70,21 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
     private final List<WeakReference<Property>> bidirectionalBoundProperties = new ArrayList<>();
 
     /**
-     * The last value that has been set for this property binding, will be used once the property gets available.
+     * Determines if the binding will remember the value that has been provided via the {@link #setValue(Object)} if the current {@link #observedValue} is still null.
+     *
+     * @see #setValue(Object)
+     * @see #setValue
      */
-    @Nullable
-    private TValue memorizedValue;
+    private boolean willRememberSetValue;
+
+    /**
+     * The last value that has been via the {@link #setValue(Object)} for this {@link IPropertyBinding} when the {@link #observedValue} was not available.
+     *
+     * @see #afterSetObservedValue(ObservableValue)
+     * @see #setValue
+     */
+    @NotNull
+    private final ValueContainer<TValue> setValue = new ValueContainer<>();
 
     // endregion
 
@@ -87,23 +98,45 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
 
     // region Override RootBinding
 
+    /**
+     * Returns the current value of the {@link #observedValue} if any.
+     *
+     * @return the current value of the {@link #observedValue} if any.
+     */
+    @Nullable
+    @Override
+    protected TValue computeValue() {
+        final Optional<ObservableValue<TValue>> observedValue = getObservedValue();
+        if (observedValue.isPresent() || hasFallbackValue()) {
+            return super.computeValue();
+        } else if (setValue.hasValue()) {
+            return setValue.getValue();
+        } else {
+            return null;
+        }
+    }
+
     @Override
     protected void beforeDestroyObservedValue(@NotNull final ObservableValue<TValue> observableValue) {
         getObservedValue().ifPresent(observedValue -> {
             if (isBound()) {
                 ((Property) observedValue).unbind();
             }
+            setValue.clearValue();
         });
     }
 
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings ({"unchecked", "ConstantConditions"})
     @Override
     protected void afterSetObservedValue(@NotNull final ObservableValue<TValue> observableValue) {
         if (boundValue != null) {
             final ObservableValue<? extends TValue> boundTo = boundValue.get();
             ((Property) observableValue).bind(boundTo);
-        } else if (memorizedValue != null) {
-            setValue(memorizedValue);
+        } else if (willRememberSetValue) {
+            setValue.ifPresent(value -> {
+                setValue(value);
+                setValue.clearValue();
+            });
         }
     }
 
@@ -139,9 +172,10 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
         final Optional<ObservableValue<TValue>> observedValue = getObservedValue();
         if (observedValue.isPresent()) {
             ((Property) observedValue.get()).setValue(value);
-            memorizedValue = null;
+            setValue.clearValue();
         } else {
-            memorizedValue = value;
+            setValue.setValue(value);
+            invalidate();
         }
     }
 
@@ -160,7 +194,7 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
     @SuppressWarnings ("unchecked")
     @Override
     public void bind(@NotNull final ObservableValue<? extends TValue> observable) {
-        memorizedValue = null;
+        setValue.clearValue();
         this.boundValue = new WeakReference<>(observable);
         getObservedValue().ifPresent(observedValue -> {
             if (((Property) observedValue).isBound()) {
@@ -185,7 +219,7 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
 
     @Override
     public void bindBidirectional(@NotNull final Property<TValue> other) {
-        memorizedValue = null;
+        setValue.clearValue();
         javafx.beans.binding.Bindings.bindBidirectional(this, other);
         bidirectionalBoundProperties.add(new WeakReference<>(other));
     }
@@ -196,8 +230,19 @@ class PropertyBinding<TParentValue, TValue, TProperty extends Property<TValue>> 
     }
 
     @Override
+    public IPropertyBinding<TValue> willRememberSetValue(boolean willRememberSetValue) {
+        this.willRememberSetValue = willRememberSetValue;
+        return this;
+    }
+
+    @Override
+    public boolean willRememberSetValue() {
+        return willRememberSetValue;
+    }
+
+    @Override
     public <TOtherValue> void bindBidirectional(@NotNull final Property<TOtherValue> other, @NotNull final IConverter<TValue, TOtherValue> converter) {
-        memorizedValue = null;
+        setValue.clearValue();
         Bindings.bindBidirectional(this, other, converter);
         bidirectionalBoundProperties.add(new WeakReference<>(other));
     }

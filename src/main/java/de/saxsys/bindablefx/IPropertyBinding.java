@@ -24,6 +24,27 @@ import org.jetbrains.annotations.NotNull;
 public interface IPropertyBinding<TValue> extends Property<TValue>, IFluentBinding<TValue> {
 
     /**
+     * Determines if this {@link IPropertyBinding} will remember the value that has been provided by the {@link #setValue(Object)} method if its current property is not yet set.
+     * The memorized value will then be set as soon as the property is available
+     *
+     * @param willRememberSetValue determines if the value shall be remembered or not.
+     *
+     * @return this {@link IPropertyBinding}.
+     *
+     * @see #willRememberSetValue()
+     */
+    IPropertyBinding<TValue> willRememberSetValue(final boolean willRememberSetValue);
+
+    /**
+     * Determines if this {@link IPropertyBinding} will remember the value that has been provided by the {@link #setValue(Object)} method if its current property is not yet set.
+     *
+     * @return true if the value will be remembered, otherwise false.
+     *
+     * @see #willRememberSetValue(boolean)
+     */
+    boolean willRememberSetValue();
+
+    /**
      * Binds the given {@link Property} bidirectional against this {@link IPropertyBinding} using the given {@link IConverter} to convert back and forth.
      *
      * @param other         the other {@link Property} to bind to.

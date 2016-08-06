@@ -54,12 +54,6 @@ public class RelayBinding<TParentValue, TValue, TObservedValue extends Observabl
     // region Fields
 
     /**
-     * The {@link Function} which will be used to get the desired {@link ObservableValue} based on the current value of the parent.
-     */
-    @NotNull
-    private final Function<TParentValue, TObservedValue> relayResolver;
-
-    /**
      * The current parent that is used in this binding.
      */
     @NotNull
@@ -76,7 +70,6 @@ public class RelayBinding<TParentValue, TValue, TObservedValue extends Observabl
     // region Constructor
 
     RelayBinding(@NotNull final ObservableValue<TParentValue> parent, @NotNull final Function<TParentValue, TObservedValue> relayResolver) {
-        this.relayResolver = relayResolver;
         this.onParentChanged = (observable, oldValue, newValue) -> {
             destroyObservedValue();
             if (newValue != null) {

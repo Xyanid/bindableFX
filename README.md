@@ -1,7 +1,7 @@
 # bindableFX
 This library adds additional functionality to javaFX binding mechanism.
 
-[![Build Status](https://xyanid.de:8584/app/rest/builds/buildType:BindableFX_Build/statusIcon)](https://xyanid.de:8584/viewType.html?buildTypeId=BindableFX_Build&guest=1)
+[![Build Status](https://ci.xyanid.de/app/rest/builds/buildType:BindableFX_Build/statusIcon)](https://ci.xyanid.de/viewType.html?buildTypeId=BindableFX_Build&guest=1)
 
 ### Maven dependency###
 

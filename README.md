@@ -26,5 +26,5 @@ Here you get new features. This release is unstable and shouldn't be used in pro
 		<groupId>de.saxsys</groupId>
 		<artifactId>bindablefx</artifactId>
 		<version>2.1.0-SNAPSHOT</version>
-</dependen>
-
+</dependency>
+```
